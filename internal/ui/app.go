@@ -4,21 +4,23 @@ import (
 	"os"
 
 	"github.com/gizak/termui/v3"
-	"github.com/gizak/termui/v3/widgets"
 	"github.com/okira-e/gotasks/internal/domain"
+	"github.com/okira-e/gotasks/internal/opt"
+	"github.com/okira-e/gotasks/internal/utils"
 )
 
 // App represents the entire UI entity that has both the state and behavior of
 // rendering anything to the screen.
 type App struct {
-	UserConfig *domain.UserConfig
-	Width      int
-	Height     int
-	// The names of the columns for this kanban (Todo, In Progress, etc).
-	// ColumnHeadersWidgets is the widgets that represent the headers for each column.
-	ColumnHeadersWidgets []*widgets.Paragraph
-	// TicketsWidgets are a slice representing each ticket on the board.
-	Tickets []*widgets.Paragraph
+	userConfig                  *domain.UserConfig
+	boardName                   string
+	width                       int
+	height                      int
+	// theme could be "dark" or "light". Is set through an environment variable.
+	theme                       opt.Option[string]
+	shouldRenderCreateTaskPopup bool
+	// widgetsToRender is the final slice of widget pointers to render.
+	widgetsToRender []termui.Drawable
 }
 
 // NewApp creates a new instance of the App with initial configurations.
@@ -29,13 +31,14 @@ func NewApp(userConfig *domain.UserConfig) (*App, error) {
 
 	width, height := termui.TerminalDimensions()
 
+	theme := os.Getenv("GOTASKS_THEME")
+	
 	// Initialize the app struct with state
 	app := &App{
-		UserConfig:           userConfig,
-		Width:                width,
-		Height:               height,
-		ColumnHeadersWidgets: []*widgets.Paragraph{},
-		Tickets:              []*widgets.Paragraph{},
+		userConfig: userConfig,
+		width:      width,
+		height:     height,
+		theme:      utils.Cond(theme != "", opt.Some(theme), opt.None[string]()),
 	}
 
 	return app, nil
@@ -45,7 +48,9 @@ func NewApp(userConfig *domain.UserConfig) (*App, error) {
 func (app *App) Run(boardName string) {
 	defer termui.Close()
 
-	app.render(boardName)
+	app.boardName = boardName
+
+	app.render()
 
 	for event := range termui.PollEvents() {
 		app.handleEvent(boardName, event)

@@ -18,7 +18,7 @@ import (
 			"dir": "/Users/omarrafat/Boards/masa",
 			"board": {
 				"columns": ["Todo", "Open", "Closed"],
-				"tickets": {
+				"tasks": {
 					"Todo": [
 						{
 							"title": "Lorem",
@@ -57,8 +57,8 @@ type Board struct {
 	Name  string `json:"name"`
 	Dir   string `json:"dir"`
 	Columns []string          `json:"columns"`
-	// Tickets are the individual cards on the board representing a task.
-	Tickets map[string][]Ticket `json:"tickets"`
+	// Tasks are the individual cards on the board representing a task.
+	Tasks map[string][]Task `json:"tasks"`
 }
 
 // DoesUserConfigExist checks if a user config has already be generated for this user.
@@ -123,7 +123,7 @@ func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
 		Name: boardName,
 		Dir: dirPath,
 		Columns: []string{},
-		Tickets: make(map[string][]Ticket),
+		Tasks: make(map[string][]Task),
 	}
 	
 	// Add the newly created board to the config.

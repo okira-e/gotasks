@@ -8,25 +8,45 @@ import (
 
 // handleEvent processes user input and other events.
 func (app *App) handleEvent(boardName string, event termui.Event) {
-	
+
 	if event.Type == termui.ResizeEvent {
-		app.render(boardName)
-	} 
-	
+		app.render()
+	}
+
 	if event.Type == termui.KeyboardEvent {
-		handleKeymap(event)
+		app.handleKeymap(event)
 	}
 }
 
-func handleKeymap(event termui.Event) {
-	if event.ID == "<Escape>" {
-	}
+func (app *App) handleKeymap(event termui.Event) {
+	switch event.ID {
+	case "<Escape>":
+		{
+			if app.shouldRenderCreateTaskPopup {
+				app.shouldRenderCreateTaskPopup = false
+			}
 
-	if event.ID == "q" || event.ID == "<C-c>" {
-		termui.Close()
-		os.Exit(0)
-	}
+			app.render()
+		}
+	case "h", "?":
+		{
+			// Handle help key logic here
+		}
+	case "q", "<C-c>":
+		{
+			termui.Close()
+			os.Exit(0)
+		}
+	case "c":
+		{
+			if !app.shouldRenderCreateTaskPopup {
+				app.shouldRenderCreateTaskPopup = true
+				app.render()
+			}
+		}
 
-	if event.ID == "h" || event.ID == "?" {
+	// Optionally, you can handle the default case if no matching keys are found
+	default:
+		// Handle other keys if necessary
 	}
 }

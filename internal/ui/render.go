@@ -8,32 +8,30 @@ import (
 	"github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 	"github.com/okira-e/gotasks/internal/domain"
+	"github.com/okira-e/gotasks/internal/utils"
 )
 
 // render re-renders the UI based on the current state of the app.
-func (app *App) render(boardName string) {
-	widgetsToRender := []termui.Drawable{}
+func (app *App) render() {
+	app.widgetsToRender = []termui.Drawable{}
+	defer termui.Clear()
 
-	app.Width, app.Height = termui.TerminalDimensions()
+	app.width, app.height = termui.TerminalDimensions()
 
 	// App has the entire userConfig object that includes all the boards.
 	// Here we are extracting the pointer for this specific board that
 	// ther renderer was asked to render and are passing it down.
-	boardOpt := app.UserConfig.GetBoard(boardName)
-	board := boardOpt.Expect("Board found to be null. boardName: " + boardName)
+	boardOpt := app.userConfig.GetBoard(app.boardName)
+	board := boardOpt.Expect("Board found to be null. boardName: " + app.boardName)
 
 	app.drawColumnHeaders(board)
-	for _, columnWidget := range app.ColumnHeadersWidgets {
-		widgetsToRender = append(widgetsToRender, columnWidget)
+	app.drawTasks(board)
+
+	if app.shouldRenderCreateTaskPopup {
+		app.drawCreateTaskPopup()
 	}
 
-	app.drawTickets(board)
-	for _, ticket := range app.Tickets {
-		widgetsToRender = append(widgetsToRender, ticket)
-	}
-
-	termui.Clear()
-	termui.Render(widgetsToRender...)
+	termui.Render(app.widgetsToRender...)
 }
 
 func (app *App) drawColumnHeaders(board *domain.Board) {
@@ -41,27 +39,28 @@ func (app *App) drawColumnHeaders(board *domain.Board) {
 	// to somewhere else outside the renderer. So mutating the board for an initial state is handled before
 	// asking the renderer to render anything.
 	if len(board.Columns) == 0 {
-		err := app.UserConfig.AddColumnToBoard(board.Name, "Todo")
+		err := app.userConfig.AddColumnToBoard(board.Name, "Todo")
 		if err != nil {
 			log.Fatalf("Failed to add a %s column. %s", "Todo", err)
 		}
-		err = app.UserConfig.AddColumnToBoard(board.Name, "In Progress")
+		err = app.userConfig.AddColumnToBoard(board.Name, "In Progress")
 		if err != nil {
 			log.Fatalf("Failed to add a %s column. %s", "In Progress", err)
 		}
-		err = app.UserConfig.AddColumnToBoard(board.Name, "Done")
+		err = app.userConfig.AddColumnToBoard(board.Name, "Done")
 		if err != nil {
 			log.Fatalf("Failed to add a %s column. %s", "Done", err)
 		}
 	}
 
-	boardOpt := app.UserConfig.GetBoard(board.Name)
+	boardOpt := app.userConfig.GetBoard(board.Name)
 	board = boardOpt.Unwrap()
 
-	widgetWidth := app.Width / len(board.Columns)
+	widgetWidth := app.width / len(board.Columns)
 
 	for i, columnName := range board.Columns {
 		widget := widgets.NewParagraph()
+		app.applyTheme(widget)
 		widget.Border = true
 
 		x1 := i * widgetWidth
@@ -73,21 +72,29 @@ func (app *App) drawColumnHeaders(board *domain.Board) {
 
 		// Center the text
 		widget.Text = centerText(columnName, widgetWidth, true)
+		// log.Fatalf("THEME: %s", app.theme)
+		if app.theme.IsSome() {
+			widget.TextStyle = utils.Cond(
+				app.theme.Unwrap() == "dark",
+				termui.NewStyle(termui.ColorWhite),
+				termui.NewStyle(termui.ColorBlack),
+			)
+		}
 		widget.WrapText = true
 
-		app.ColumnHeadersWidgets = append(app.ColumnHeadersWidgets, widget)
+		app.widgetsToRender = append(app.widgetsToRender, widget)
 	}
 }
 
-func (app *App) drawTickets(board *domain.Board) {
-	widgetWidth := app.Width / len(board.Columns)
+func (app *App) drawTasks(board *domain.Board) {
+	widgetWidth := app.width / len(board.Columns)
 	widthPadding := 4
 
 	for columnIndex, columnName := range board.Columns {
 		// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
 		differentWidgetsLengths := []int{}
 
-		for _, ticket := range board.Tickets[columnName] {
+		for _, ticket := range board.Tasks[columnName] {
 			widgetLength := 2 // Border lines.
 
 			widgetLength += int(math.Ceil(
@@ -107,6 +114,7 @@ func (app *App) drawTickets(board *domain.Board) {
 			}
 
 			widget := widgets.NewParagraph()
+			app.applyTheme(widget)
 			widget.Border = true
 			widget.WrapText = true
 			// widget.Text = textEllipsis(ticket.Title, (widgetWidth - widthPadding))
@@ -140,14 +148,94 @@ func (app *App) drawTickets(board *domain.Board) {
 				sumOfPreviousWidgetsLengths += length
 			}
 
-			y1 := sumOfPreviousWidgetsLengths + app.ColumnHeadersWidgets[0].Dy()
+			y1 := sumOfPreviousWidgetsLengths + 3 // 3 here is the y length of the header.
 			y2 := y1 + widgetLength
 
 			widget.SetRect(x1, y1, x2, y2)
 
-			app.Tickets = append(app.Tickets, widget)
+			app.widgetsToRender = append(app.widgetsToRender, widget)
 
 			differentWidgetsLengths = append(differentWidgetsLengths, widgetLength)
+		}
+	}
+}
+
+func (app *App) drawCreateTaskPopup() {
+	boxWidget := termui.NewBlock()
+	app.applyTheme(boxWidget)
+	boxWidget.SetRect(
+		app.width/4,
+		app.height/4,
+		app.width/4*3,
+		app.height/4*3,
+	)
+
+	app.widgetsToRender = append(app.widgetsToRender, boxWidget)
+}
+
+// applyTheme applies the theme set on the App object to any widget given.
+func (app *App) applyTheme(widget termui.Drawable) {
+	if app.theme.IsSome() {
+		color := utils.Cond(
+			app.theme.Unwrap() == "dark",
+			termui.NewStyle(termui.ColorWhite),
+			termui.NewStyle(termui.ColorBlack),
+		)
+
+		switch widget := widget.(type) {
+		case *widgets.Paragraph:
+			{
+				widget.TextStyle = color
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *widgets.List:
+			{
+				widget.TextStyle = color
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *widgets.Table:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+
+		case *widgets.BarChart:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *widgets.Gauge:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *widgets.PieChart:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *widgets.SparklineGroup:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *termui.Block:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *termui.Canvas:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
+		case *termui.Grid:
+			{
+				widget.BorderStyle = color
+				widget.TitleStyle = color
+			}
 		}
 	}
 }
