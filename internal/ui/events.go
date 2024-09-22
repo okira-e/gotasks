@@ -52,6 +52,6 @@ func (app *App) handleKeymap(event termui.Event) {
 			}
 		}
 	default:
-		// Handle other keys if necessary
+		return
 	}
 }

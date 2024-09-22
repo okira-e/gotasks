@@ -32,6 +32,10 @@ func (self *TextInput) GetDrawableWidget() *widgets.Paragraph {
 	return self.drawableWidget
 }
 
+func (self *TextInput) GetText() string {
+	return self.textBuilder.String()
+}
+
 // Flush clears the text input.
 func (self *TextInput) Flush() {
 	self.textBuilder.Reset()

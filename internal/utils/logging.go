@@ -2,7 +2,9 @@ package utils
 
 import (
 	"encoding/json"
+	"os"
 
+	"github.com/okira-e/gotasks/internal/vars"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,7 +38,11 @@ func SaveLog(severity Severity, message string, context map[string]any) {
 		}
 		case Debug:
 		{
-			payload.Debug(message)
+			isDebugMode := os.Getenv(vars.DebugFlag)
+			
+			if isDebugMode == "true" {
+				payload.Debug(message)
+			}
 		}
 		case Warn:
 		{

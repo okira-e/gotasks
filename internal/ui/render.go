@@ -8,6 +8,17 @@ import (
 func (app *App) render() {
 	termui.Clear()
 
+	// Update the board in the state with the latest one.
+	
+	// boardOpt := app.userConfig.GetBoard(app.boardName)
+	// board := boardOpt.Expect("Screwed?")
+	
+	// utils.SaveLog(
+	// 	utils.Debug,
+	// 	"Board: ",
+	// 	map[string]any{"BOARD: ": board.Tasks["Todo"]},
+	// )
+
 	app.width, app.height = termui.TerminalDimensions()
 
 	applyTheme(app.columnsHeadersView, app.theme)

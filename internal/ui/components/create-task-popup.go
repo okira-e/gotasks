@@ -2,6 +2,7 @@ package components
 
 import (
 	"github.com/gizak/termui/v3"
+	"github.com/okira-e/gotasks/internal/domain"
 	cw "github.com/okira-e/gotasks/internal/ui/custom-widgets"
 	"github.com/okira-e/gotasks/internal/utils"
 )
@@ -13,14 +14,18 @@ type CreateTaskPopup struct {
 	titleInput   	*cw.TextInput
 	descInput    	*cw.TextInput
 	focusedField 	*cw.TextInput
+	userConfig		*domain.UserConfig
+	boardName		string
 }
 
 // NewCreateTaskPopup initializes a new popup.
-func NewCreateTaskPopup(fullWidth int, fullHeight int) *CreateTaskPopup {
+func NewCreateTaskPopup(fullWidth int, fullHeight int, config *domain.UserConfig, boardName string) *CreateTaskPopup {
 	ret := &CreateTaskPopup{
 		Visible:    false,
 		titleInput: cw.NewTextInput(),
 		descInput:  cw.NewTextInput(),
+		userConfig: config,
+		boardName:  boardName,
 	}
 
 	y1 := fullHeight/4
@@ -56,12 +61,23 @@ func (self *CreateTaskPopup) GetAllDrawableWidgets() []termui.Drawable {
 
 func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 	if event.ID ==  "<Escape>" {
-		self.Visible = false
-		self.focusedField = self.titleInput
-		self.titleInput.Flush()
-		self.descInput.Flush()
+		self.Hide()
 	} else if event.ID == "<Tab>" {
 		self.ToggleFocusOnNextField()
+	} else if event.ID == "<Enter>" {
+		// Save the task.
+		task := domain.NewTask(
+			self.titleInput.GetText(), 
+			self.descInput.GetText(),
+		)
+		
+		err := self.userConfig.AddTask(self.boardName, task)
+		if err != nil {
+			utils.SaveLog(utils.Error, err.Error(), map[string]any{"boardName": self.boardName, "task": task})
+		}
+		
+		self.Hide()
+		// Re-rendering already happens after this function call.
 	} else if event.ID == "<Backspace>" {
 		self.focusedField.Pop()
 	} else if parsedString := utils.ParseEventId(event.ID); parsedString != "" {
@@ -72,6 +88,13 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 		
 		self.focusedField.AppendText(parsedString)
 	}
+}
+
+func (self *CreateTaskPopup) Hide() {
+	self.Visible = false
+	self.focusedField = self.titleInput
+	self.titleInput.Flush()
+	self.descInput.Flush()
 }
 
 // Toggles the focus onto the next input field.

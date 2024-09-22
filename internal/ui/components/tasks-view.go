@@ -11,25 +11,44 @@ import (
 )
 
 type TasksViewComponent struct {
-	NeedsRedraw  	bool
+	NeedsRedraw bool
 	// Represents a card on the board. Wherever it is.
 	tasksWidgets []*widgets.Paragraph
+	width        int
+	height       int
+	board        *domain.Board
 }
 
-func NewTasksViewComponent(fullWidth int, fullHeight int, columnNames []string, tasks map[string][]domain.Task) *TasksViewComponent {
+func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *TasksViewComponent {
 	ret := &TasksViewComponent{
-		NeedsRedraw: true,
-		tasksWidgets: []*widgets.Paragraph{},
+		width:   		fullWidth,
+		height:   		fullHeight,
+		board:			board,
+		NeedsRedraw: 	true,
+		tasksWidgets: 	[]*widgets.Paragraph{},
 	}
 	
-	widgetWidth := fullWidth / len(columnNames)
+	ret.tasksWidgets = ret.drawTasks()
+
+	return ret
+}
+
+func (self *TasksViewComponent) UpdateTasks() {
+	self.tasksWidgets = self.drawTasks()
+}
+
+func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
+	ret := []*widgets.Paragraph{}
+	
+	widgetWidth := self.width / len(self.board.Columns)
 	const widthPadding = 4
 
-	for columnIndex, columnName := range columnNames {
+	// @Todo: Right now we don't have any sort of scrolling for overflowing tasks.
+	for columnIndex, columnName := range self.board.Columns {
 		// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
 		differentWidgetsLengths := []int{}
 
-		for _, ticket := range tasks[columnName] {
+		for _, ticket := range self.board.Tasks[columnName] {
 			widgetLength := 2 // Border lines.
 
 			widgetLength += int(math.Ceil(
@@ -89,7 +108,7 @@ func NewTasksViewComponent(fullWidth int, fullHeight int, columnNames []string, 
 
 			differentWidgetsLengths = append(differentWidgetsLengths, widgetLength)
 			
-			ret.tasksWidgets = append(ret.tasksWidgets, widget)
+			ret = append(ret, widget)
 		}
 	}
 
@@ -109,6 +128,8 @@ func (self *TasksViewComponent) GetAllDrawableWidgets() []termui.Drawable {
 
 func (self *TasksViewComponent) Draw() {
 	self.NeedsRedraw = false
+	
+	self.UpdateTasks()
 	
 	termui.Render(
 		self.GetAllDrawableWidgets()...

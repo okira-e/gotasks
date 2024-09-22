@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"github.com/okira-e/gotasks/internal/opt"
+	"github.com/okira-e/gotasks/internal/utils"
 )
 
 /*
@@ -54,9 +55,9 @@ type UserConfig struct {
 }
 
 type Board struct {
-	Name  string `json:"name"`
-	Dir   string `json:"dir"`
-	Columns []string          `json:"columns"`
+	Name    string   `json:"name"`
+	Dir     string   `json:"dir"`
+	Columns []string `json:"columns"`
 	// Tasks are the individual cards on the board representing a task.
 	Tasks map[string][]Task `json:"tasks"`
 }
@@ -129,6 +130,33 @@ func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
 	// Add the newly created board to the config.
 	self.Boards = append(self.Boards, &board)
 	self.writeToDisk()
+	
+	return nil
+}
+
+// AddTask adds a new task to the left most column (idealy called Backlog).
+func (self *UserConfig) AddTask(boardName string, task Task) error {
+	utils.SaveLog(utils.Debug, "Adding task", map[string]any{"task": task})
+	
+	boardOpt := self.GetBoard(boardName)
+	if boardOpt.IsNone() {
+		return errors.New("Couldn't find the board while trying to add a task")
+	}
+
+	board := boardOpt.Unwrap()
+	
+	if len(board.Columns) == 0 {
+		return errors.New("No columns found to add this task to.")
+	}
+	
+	columnName := board.Columns[0]
+	
+	board.Tasks[columnName] = append(board.Tasks[columnName], task)
+	
+	err := self.UpdateBoard(board)
+	if err != nil {
+		return err
+	}
 	
 	return nil
 }

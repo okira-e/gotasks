@@ -1,11 +1,13 @@
 package ui
 
 import (
+	"errors"
 	"os"
 
 	"github.com/gizak/termui/v3"
 	"github.com/okira-e/gotasks/internal/domain"
 	"github.com/okira-e/gotasks/internal/ui/components"
+	"github.com/okira-e/gotasks/internal/vars"
 )
 
 
@@ -44,23 +46,27 @@ func NewApp(userConfig *domain.UserConfig, boardName string) (*App, error) {
 
 	width, height := termui.TerminalDimensions()
 	
-	// @Todo: Expect here exits the program without calling termui.Close()
 	boardOpt := userConfig.GetBoard(boardName)
-	board := boardOpt.Expect("Board found to be null. boardName: " + boardName)
+	if boardOpt.IsNone() {
+		return nil, errors.New("Couldn't find the board while trying to add a task")
+	}
 
-	theme := os.Getenv("GOTASKS_THEME")
+	board := boardOpt.Unwrap()
+
+	theme := os.Getenv(vars.ThemeFlag)
 	if theme == "" {
 		theme = "dark"
 	}
 	
 	app := &App{
-		userConfig: 			userConfig,
+		userConfig:				userConfig,
+		boardName: 				boardName,
 		width:      			width,
 		height:     			height,
 		theme: 					theme,
-		createTaskPopup: 		components.NewCreateTaskPopup(width, height),
+		createTaskPopup: 		components.NewCreateTaskPopup(width, height, userConfig, boardName),
 		columnsHeadersView: 	components.NewColumnsHeaderComponent(width, height, board.Columns),
-		tasksView: 				components.NewTasksViewComponent(width, height, board.Columns, board.Tasks),
+		tasksView: 				components.NewTasksViewComponent(width, height, board),
 	}
 
 	return app, nil

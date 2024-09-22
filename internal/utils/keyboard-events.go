@@ -1,6 +1,7 @@
 package utils
 
 
+// @Incomplete: Only accepts English characters right now.
 func ParseEventId(key string) string {
 	if len(key) == 1 {
 		toBytes := []byte(key)
