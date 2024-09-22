@@ -48,17 +48,20 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 		// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
 		differentWidgetsLengths := []int{}
 
-		for _, ticket := range self.board.Tasks[columnName] {
+		// Make the paragraph widgets and append them but in reverse. So last task in self.board.Tasks["Todo"] is rendered ontop.
+		for i := len(self.board.Tasks[columnName]) - 1; i > 0; i -= 1 {
+			task := self.board.Tasks[columnName][i]
+			
 			widgetLength := 2 // Border lines.
 
 			widgetLength += int(math.Ceil(
-				float64(len(ticket.Title)) / float64(widgetWidth-2),
+				float64(len(task.Title)) / float64(widgetWidth-2),
 			))
 
-			if ticket.Description != "" {
+			if task.Description != "" {
 				widgetLength += 1 // The separator line "-------" between the title and the description
 				widgetLength += int(math.Ceil(
-					float64(len(ticket.Description)) / float64(widgetWidth-2), // 2 here is for border lines
+					float64(len(task.Description)) / float64(widgetWidth-2), // 2 here is for border lines
 				))
 			}
 
@@ -71,18 +74,18 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 			widget.Border = true
 			widget.WrapText = true
 			// widget.Text = TextEllipsis(ticket.Title, (widgetWidth - widthPadding))
-			widget.Text = ticket.Title
+			widget.Text = task.Title
 			widget.Text += "\n"
 			widget.Text += strings.Repeat("-", widgetWidth-widthPadding)
 			widget.Text += "\n"
 
-			if ticket.Description != "" {
-				widget.Text += ticket.Description
+			if task.Description != "" {
+				widget.Text += task.Description
 			} else {
 				// See how much the title has taken up. If it took only one line, add a new line to the description
 				// because it looks better.
 				if math.Ceil(
-					float64(len(ticket.Title))/float64(widgetWidth),
+					float64(len(task.Title))/float64(widgetWidth),
 				) == 1 {
 					widget.Text += "\n"
 				}
