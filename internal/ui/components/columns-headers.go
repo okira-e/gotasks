@@ -12,12 +12,14 @@ type ColumnsHeaderComponent struct {
 }
 
 func NewColumnsHeaderComponent(fullWidth int, fullHeight int, columnNames []string) *ColumnsHeaderComponent {
-	ret := &ColumnsHeaderComponent{
+	component := new(ColumnsHeaderComponent)
+	
+	*component = ColumnsHeaderComponent{
 		NeedsRedraw: true,
 		columnBoxes: []*widgets.Paragraph{},
 	}
 	
-	// @Cleanup: It maybe better to move this initialization of columns when there isn't any (on first startup)
+	// @Todo, @Cleanup: It maybe better to move this initialization of columns when there isn't any (on first startup)
 	// to somewhere else outside the renderer. So mutating the board for an initial state is handled before
 	// asking the renderer to render anything.
 	// if len(columnNames) == 0 {
@@ -52,10 +54,10 @@ func NewColumnsHeaderComponent(fullWidth int, fullHeight int, columnNames []stri
 		
 		widget.WrapText = true
 
-		ret.columnBoxes = append(ret.columnBoxes, widget)
+		component.columnBoxes = append(component.columnBoxes, widget)
 	}
 
-	return ret
+	return component
 }
 
 func (self *ColumnsHeaderComponent) GetAllDrawableWidgets() []termui.Drawable {

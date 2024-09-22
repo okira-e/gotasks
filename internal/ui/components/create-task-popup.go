@@ -20,7 +20,9 @@ type CreateTaskPopup struct {
 
 // NewCreateTaskPopup initializes a new popup.
 func NewCreateTaskPopup(fullWidth int, fullHeight int, config *domain.UserConfig, boardName string) *CreateTaskPopup {
-	ret := &CreateTaskPopup{
+	component := new(CreateTaskPopup)
+	
+	*component = CreateTaskPopup{
 		Visible:    false,
 		titleInput: cw.NewTextInput(),
 		descInput:  cw.NewTextInput(),
@@ -30,8 +32,8 @@ func NewCreateTaskPopup(fullWidth int, fullHeight int, config *domain.UserConfig
 
 	y1 := fullHeight/4
 
-	ret.titleInput.GetDrawableWidget().Title = "Title"
-	ret.titleInput.GetDrawableWidget().SetRect(
+	component.titleInput.GetDrawableWidget().Title = "Title"
+	component.titleInput.GetDrawableWidget().SetRect(
 		fullWidth/4,
 		fullHeight/4,
 
@@ -39,17 +41,17 @@ func NewCreateTaskPopup(fullWidth int, fullHeight int, config *domain.UserConfig
 		y1+3,
 	)
 
-	ret.focusedField = ret.titleInput
+	component.focusedField = component.titleInput
 
-	ret.descInput.GetDrawableWidget().Title = "Description"
-	ret.descInput.GetDrawableWidget().SetRect(
+	component.descInput.GetDrawableWidget().Title = "Description"
+	component.descInput.GetDrawableWidget().SetRect(
 		fullWidth/4,
-		ret.titleInput.GetDrawableWidget().Max.Y, // 3 is the height of the Title widget above it.
+		component.titleInput.GetDrawableWidget().Max.Y, // 3 is the height of the Title widget above it.
 		fullWidth/4*3,
 		fullHeight/4*3,
 	)
 
-	return ret
+	return component
 }
 
 func (self *CreateTaskPopup) GetAllDrawableWidgets() []termui.Drawable {

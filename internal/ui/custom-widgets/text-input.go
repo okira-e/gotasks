@@ -17,10 +17,14 @@ type TextInput struct {
 func NewTextInput() *TextInput {
 	var builder strings.Builder
 
-	return &TextInput{
+	self := new(TextInput)
+	
+	*self = TextInput{
 		textBuilder:    builder,
 		drawableWidget: widgets.NewParagraph(),
 	}
+	
+	return self
 }
 
 // GetDrawableWidget returns the drawable widget for the text input in its drawable ready state.

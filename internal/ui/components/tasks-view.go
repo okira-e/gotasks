@@ -23,7 +23,9 @@ type TasksViewComponent struct {
 }
 
 func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *TasksViewComponent {
-	ret := &TasksViewComponent{
+	component := new(TasksViewComponent)
+	
+	*component = TasksViewComponent{
 		width:   		fullWidth,
 		height:   		fullHeight,
 		board:			board,
@@ -31,8 +33,8 @@ func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *
 		tasksWidgets: 	[]*widgets.Paragraph{},
 	}
 	
-	ret.tasksWidgets = ret.drawTasks()
-	return ret
+	component.tasksWidgets = component.drawTasks()
+	return component
 }
 
 func (self *TasksViewComponent) UpdateTasks() {

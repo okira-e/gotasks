@@ -58,7 +58,9 @@ func NewApp(userConfig *domain.UserConfig, boardName string) (*App, error) {
 		theme = "dark"
 	}
 	
-	app := &App{
+	app := new(App)
+	
+	*app = App{
 		userConfig:				userConfig,
 		boardName: 				boardName,
 		width:      			width,

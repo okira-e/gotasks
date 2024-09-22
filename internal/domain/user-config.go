@@ -79,20 +79,22 @@ func DoesUserConfigExist() (bool, error) {
 // SetupUserConfig creates a new default config and writes it to disk.
 // It returns a pointer to the new config.
 func SetupUserConfig() (*UserConfig, error) {
-	config := NewDefaultUserConfig()
+	config := new(UserConfig)
+	
+	*config = NewDefaultUserConfig()
 	
 	err := config.writeToDisk()
 	if err != nil {
 		return nil, err
 	}
 	
-	return &config, nil
+	return config, nil
 }
 
 // GetUserConfig reads the user config file and returns a pointer 
 // to a UserConfig object.
 func GetUserConfig() (*UserConfig, error) {
-	var userConfig UserConfig
+	userConfig := new(UserConfig)
 
 	filePath, err := GetConfigFilePathBasedOnOS()
 	if err != nil {
@@ -109,7 +111,7 @@ func GetUserConfig() (*UserConfig, error) {
 		return nil, err
 	}
 
-	return &userConfig, nil
+	return userConfig, nil
 }
 
 func NewDefaultUserConfig() UserConfig {
@@ -120,7 +122,9 @@ func NewDefaultUserConfig() UserConfig {
 
 // AddBoard adds a new board to the config.
 func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
-	board := Board {
+	board := new(Board)
+	
+	*board = Board {
 		Name: boardName,
 		Dir: dirPath,
 		Columns: []string{},
@@ -128,7 +132,7 @@ func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
 	}
 	
 	// Add the newly created board to the config.
-	self.Boards = append(self.Boards, &board)
+	self.Boards = append(self.Boards, board)
 	self.writeToDisk()
 	
 	return nil
