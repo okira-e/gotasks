@@ -6,6 +6,7 @@ import (
 
 	"github.com/okira-e/gotasks/internal/domain"
 	"github.com/okira-e/gotasks/internal/ui"
+	"github.com/okira-e/gotasks/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -70,12 +71,14 @@ between a to-do list and a Jira board that is accessible from the terminal.
 		}
 		
 		// Initialize the App
-		app, err := ui.NewApp(userConfig)
+		app, err := ui.NewApp(userConfig, boardName)
 		if err != nil {
 			log.Fatalf("Failed to initialize app. %v", err)
 		}
+		
+		utils.SaveLog(utils.Info, "Initialized App", map[string]any{"some_data": app})
 
-		app.Run(boardName)
+		app.Run()
 	},
 }
 

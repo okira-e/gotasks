@@ -1,21 +1,54 @@
 package utils
 
 import (
-	"fmt"
-	"os"
+	"encoding/json"
 
-	"github.com/okira-e/gotasks/internal/vars"
+	"github.com/sirupsen/logrus"
 )
 
-// PrintInColor prints a string in the specified color.
-// It takes a color code in ANSI format & a string to print.
-// It also prints to stderr if the isError flag is provided.
-// Example:
-// PrintInColor("\033[31m", "This is red text.")
-func PrintInColor(color string, str string, isError bool) {
-	if isError {
-		fmt.Fprintln(os.Stderr, color + str + vars.ResetColor)
-	} else {
-		fmt.Println(color + str + vars.ResetColor)
+type Severity int
+
+const (
+	Info Severity = iota
+	Debug
+	Warn
+	Error
+	Fatal
+)
+
+
+func SaveLog(severity Severity, message string, context map[string]any) {
+	contextJSON, err := json.Marshal(context)
+	if err != nil {
+		contextJSON = []byte("ERROR: Couldn't parse the data for this log.")
+	}
+	
+	payload := logrus.WithFields(
+		logrus.Fields{
+			"context": string(contextJSON),
+		},
+	)
+	
+	switch severity {
+		case Info:
+		{
+			payload.Info(message)
+		}
+		case Debug:
+		{
+			payload.Debug(message)
+		}
+		case Warn:
+		{
+			payload.Warn(message)
+		}
+		case Error:
+		{
+			payload.Error(message)
+		}
+		case Fatal:
+		{
+			payload.Fatal(message)
+		}
 	}
 }

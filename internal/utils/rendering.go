@@ -1,10 +1,10 @@
-package ui
+package utils
 
 import "strings"
 
-// textEllipsis checks if the text is longer than the width of its container and
+// TextEllipsis checks if the text is longer than the width of its container and
 // adds a "..." as the last characters accordingly.
-func textEllipsis(text string, charactersLimit int) string {
+func TextEllipsis(text string, charactersLimit int) string {
 	if len(text) >= charactersLimit {
 		chopped := text[:charactersLimit]
 		if len(chopped) < 3 {
@@ -17,8 +17,8 @@ func textEllipsis(text string, charactersLimit int) string {
 	return text
 }
 
-// centerText centers the text inside the widget
-func centerText(text string, width int, withBorders bool) string {
+// CenterText centers the text inside the widget
+func CenterText(text string, width int, withBorders bool) string {
 	if len(text) >= width {
 		return text // If text is longer than the width, no need to center
 	}

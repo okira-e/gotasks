@@ -63,7 +63,7 @@ type Board struct {
 
 // DoesUserConfigExist checks if a user config has already be generated for this user.
 func DoesUserConfigExist() (bool, error) {
-	filePath, err := getConfigFilePathBasedOnOS()
+	filePath, err := GetConfigFilePathBasedOnOS()
 	if err != nil {
 		return false, err
 	}
@@ -93,7 +93,7 @@ func SetupUserConfig() (*UserConfig, error) {
 func GetUserConfig() (*UserConfig, error) {
 	var userConfig UserConfig
 
-	filePath, err := getConfigFilePathBasedOnOS()
+	filePath, err := GetConfigFilePathBasedOnOS()
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (self *UserConfig) AddColumnToBoard(boardName string, columnName string) er
 
 // writeToDisk writes or creates the config files with the provided user config.
 func (self UserConfig) writeToDisk() error { 
-	filePath, err := getConfigFilePathBasedOnOS()
+	filePath, err := GetConfigFilePathBasedOnOS()
 	if err != nil {
 		return err
 	}
@@ -200,19 +200,38 @@ func (self UserConfig) writeToDisk() error {
 	return nil
 }
 
-// getCOnfigFilePathBasedOnOS returns the config file path based on the OS.
-func getConfigFilePathBasedOnOS() (string, error) {
+// GetConfigFilePathBasedOnOS returns the config folder path based on the OS.
+func GetConfigDirPathBasedOnOS() (string, error) {
 	var osUserName string
 
 	if runtime.GOOS == "windows" {
 		osUserName = os.Getenv("USERNAME")
-		return "C:\\Users\\" + osUserName + "\\AppData\\Roaming\\gotasks\\config.json", nil
+		return "C:\\Users\\" + osUserName + "\\AppData\\Roaming\\gotasks", nil
 	} else if runtime.GOOS == "darwin" {
 		osUserName = os.Getenv("USER")
-		return "/Users/" + osUserName + "/Library/Application Support/gotasks/config.json", nil
+		return "/Users/" + osUserName + "/Library/Application Support/gotasks", nil
 	} else if runtime.GOOS == "linux" {
 		osHomeDir := os.Getenv("HOME")
-		return osHomeDir + "/.config/gotasks/config.json", nil
+		return osHomeDir + "/.config/gotasks", nil
+	} else {
+		err := errors.New("unsupported OS")
+		return "", err
+	}
+}
+
+// GetConfigFilePathBasedOnOS returns the config file path based on the OS.
+func GetConfigFilePathBasedOnOS() (string, error) {
+	configDirPath, err := GetConfigDirPathBasedOnOS()
+	if err != nil {
+		return "", err
+	}
+	
+	if runtime.GOOS == "windows" {
+		return configDirPath + "\\config.json", nil
+	} else if runtime.GOOS == "darwin" {
+		return configDirPath + "/config.json", nil
+	} else if runtime.GOOS == "linux" {
+		return configDirPath + "/config.json", nil
 	} else {
 		err := errors.New("unsupported OS")
 		return "", err
@@ -221,7 +240,7 @@ func getConfigFilePathBasedOnOS() (string, error) {
 
 // doesConfigFileExists checks if the config file exists.
 func doesConfigFileExists() (bool, error) {
-	filePath, err := getConfigFilePathBasedOnOS()
+	filePath, err := GetConfigFilePathBasedOnOS()
 	if err != nil {
 		return false, err
 	}
@@ -235,7 +254,7 @@ func doesConfigFileExists() (bool, error) {
 
 // createDefaultConfigFiles creates the config file.
 func createDefaultConfigFiles() error {
-	filePath, err := getConfigFilePathBasedOnOS()
+	filePath, err := GetConfigFilePathBasedOnOS()
 	if err != nil {
 		return err
 	}
