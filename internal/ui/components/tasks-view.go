@@ -1,6 +1,7 @@
 package components
 
 import (
+	"fmt"
 	"math"
 	"strings"
 
@@ -13,10 +14,12 @@ import (
 type TasksViewComponent struct {
 	NeedsRedraw bool
 	// Represents a card on the board. Wherever it is.
-	tasksWidgets []*widgets.Paragraph
-	width        int
-	height       int
-	board        *domain.Board
+	tasksWidgets 	[]*widgets.Paragraph
+	width        	int
+	height       	int
+	board        	*domain.Board
+	// ID of the task that should be in focus.
+	taskInFocus		*domain.Task
 }
 
 func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *TasksViewComponent {
@@ -29,7 +32,6 @@ func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *
 	}
 	
 	ret.tasksWidgets = ret.drawTasks()
-
 	return ret
 }
 
@@ -43,13 +45,36 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 	widgetWidth := self.width / len(self.board.Columns)
 	const widthPadding = 4
 
+	// Set the task in focus to be the first task you encounter (doesn't necessarily mean the first column.)
+	found := false
+	for _, columnName := range self.board.Columns {
+		if found {
+			break
+		}
+		
+		if _, ok := self.board.Tasks[columnName]; !ok {
+			continue
+		}
+		
+		// Set the first task found IN REVERSE to be the focused one.
+		// We do this in reverse because the task rows are rendered in reverse.
+		// for _, task := range ret.board.Tasks[columnName] {
+		for i := len(self.board.Tasks[columnName]) - 1; i >= 0; i -= 1 {
+			task := self.board.Tasks[columnName][i]
+			// self.taskInFocus = task.Id
+			self.taskInFocus = task
+			found = true
+			break
+		}
+	}
+	
 	// @Todo: Right now we don't have any sort of scrolling for overflowing tasks.
 	for columnIndex, columnName := range self.board.Columns {
 		// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
 		differentWidgetsLengths := []int{}
 
 		// Make the paragraph widgets and append them but in reverse. So last task in self.board.Tasks["Todo"] is rendered ontop.
-		for i := len(self.board.Tasks[columnName]) - 1; i > 0; i -= 1 {
+		for i := len(self.board.Tasks[columnName]) - 1; i >= 0; i -= 1 {
 			task := self.board.Tasks[columnName][i]
 			
 			widgetLength := 2 // Border lines.
@@ -72,6 +97,13 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 
 			widget := widgets.NewParagraph()
 			widget.Border = true
+			
+			// if task.Id == "74ac4c49-e5f6-4bb1-86a7-a050adb6295d" {
+			if task == self.taskInFocus{
+				fmt.Println("TAK: ", )
+				widget.BorderStyle = termui.NewStyle(termui.ColorBlue)
+			}
+			
 			widget.WrapText = true
 			// widget.Text = TextEllipsis(ticket.Title, (widgetWidth - widthPadding))
 			widget.Text = task.Title

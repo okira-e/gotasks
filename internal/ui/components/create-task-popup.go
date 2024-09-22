@@ -66,7 +66,9 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 		self.ToggleFocusOnNextField()
 	} else if event.ID == "<Enter>" {
 		// Save the task.
-		task := domain.NewTask(
+		task := new(domain.Task)
+		
+		*task = domain.NewTask(
 			self.titleInput.GetText(), 
 			self.descInput.GetText(),
 		)

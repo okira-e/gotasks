@@ -59,7 +59,7 @@ type Board struct {
 	Dir     string   `json:"dir"`
 	Columns []string `json:"columns"`
 	// Tasks are the individual cards on the board representing a task.
-	Tasks map[string][]Task `json:"tasks"`
+	Tasks map[string][]*Task `json:"tasks"`
 }
 
 // DoesUserConfigExist checks if a user config has already be generated for this user.
@@ -124,7 +124,7 @@ func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
 		Name: boardName,
 		Dir: dirPath,
 		Columns: []string{},
-		Tasks: make(map[string][]Task),
+		Tasks: make(map[string][]*Task),
 	}
 	
 	// Add the newly created board to the config.
@@ -135,7 +135,7 @@ func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
 }
 
 // AddTask adds a new task to the left most column (idealy called Backlog).
-func (self *UserConfig) AddTask(boardName string, task Task) error {
+func (self *UserConfig) AddTask(boardName string, task *Task) error {
 	utils.SaveLog(utils.Debug, "Adding task", map[string]any{"task": task})
 	
 	boardOpt := self.GetBoard(boardName)

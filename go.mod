@@ -6,6 +6,7 @@ require github.com/spf13/cobra v1.8.1
 
 require (
 	github.com/gizak/termui/v3 v3.1.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.2 // indirect

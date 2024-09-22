@@ -1,18 +1,26 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Task struct {
-	Title       string `json:"title"`
+	Id    string `json:"id"`
+	Title string `json:"title"`
 	// Optional
 	Description string `json:"description"`
-	CreatedAt 	string `json:"created_at"`
+	CreatedAt   string `json:"created_at"`
 }
 
 func NewTask(title string, description string) Task {
-	return Task {
-		Title: title,
+	id := uuid.New()
+
+	return Task{
+		Id:          id.String(),
+		Title:       title,
 		Description: description,
-		CreatedAt: time.Now().UTC().String(),
+		CreatedAt:   time.Now().UTC().String(),
 	}
 }
