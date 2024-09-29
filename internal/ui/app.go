@@ -60,16 +60,14 @@ func NewApp(userConfig *domain.UserConfig, boardName string) (*App, error) {
 	
 	app := new(App)
 	
-	*app = App{
-		userConfig:				userConfig,
-		boardName: 				boardName,
-		width:      			width,
-		height:     			height,
-		theme: 					theme,
-		createTaskPopup: 		components.NewCreateTaskPopup(width, height, userConfig, boardName),
-		columnsHeadersView: 	components.NewColumnsHeaderComponent(width, height, board.Columns),
-		tasksView: 				components.NewTasksViewComponent(width, height, board),
-	}
+	app.userConfig = userConfig
+	app.boardName = boardName
+	app.width = width
+	app.height = height
+	app.theme = theme
+	app.createTaskPopup = components.NewCreateTaskPopup(width, height, userConfig, boardName)
+	app.columnsHeadersView = components.NewColumnsHeaderComponent(width, height, board.Columns)
+	app.tasksView = components.NewTasksViewComponent(width, height, board)
 
 	return app, nil
 }

@@ -54,14 +54,6 @@ type UserConfig struct {
 	Boards []*Board `json:"boards"`
 }
 
-type Board struct {
-	Name    string   `json:"name"`
-	Dir     string   `json:"dir"`
-	Columns []string `json:"columns"`
-	// Tasks are the individual cards on the board representing a task.
-	Tasks map[string][]*Task `json:"tasks"`
-}
-
 // DoesUserConfigExist checks if a user config has already be generated for this user.
 func DoesUserConfigExist() (bool, error) {
 	filePath, err := GetConfigFilePathBasedOnOS()
@@ -79,9 +71,7 @@ func DoesUserConfigExist() (bool, error) {
 // SetupUserConfig creates a new default config and writes it to disk.
 // It returns a pointer to the new config.
 func SetupUserConfig() (*UserConfig, error) {
-	config := new(UserConfig)
-	
-	*config = NewDefaultUserConfig()
+	config := NewDefaultUserConfig()
 	
 	err := config.writeToDisk()
 	if err != nil {
@@ -114,22 +104,18 @@ func GetUserConfig() (*UserConfig, error) {
 	return userConfig, nil
 }
 
-func NewDefaultUserConfig() UserConfig {
-	return UserConfig{
-		Boards: []*Board{},
-	}
+func NewDefaultUserConfig() *UserConfig {
+	ret := new(UserConfig)
+	
+	return ret
 }
 
 // AddBoard adds a new board to the config.
 func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
 	board := new(Board)
 	
-	*board = Board {
-		Name: boardName,
-		Dir: dirPath,
-		Columns: []string{},
-		Tasks: make(map[string][]*Task),
-	}
+	board.Name = boardName
+	board.Dir = dirPath
 	
 	// Add the newly created board to the config.
 	self.Boards = append(self.Boards, board)
@@ -230,6 +216,29 @@ func (self UserConfig) writeToDisk() error {
 	}
 	
 	return nil
+}
+
+type Board struct {
+	Name    string   `json:"name"`
+	Dir     string   `json:"dir"`
+	Columns []string `json:"columns"`
+	// Tasks are the individual cards on the board representing a task.
+	Tasks map[string][]*Task `json:"tasks"`
+}
+
+
+// GetColumnForTask returns the name and the index of the column that this task belongs to. 
+// It returns -1 as the index if didn't find the column.
+func (self *Board) GetColumnForTask(task *Task) (string, int) {
+	for i, columnName := range self.Columns {
+		for _, it := range self.Tasks[columnName] {
+			if it == task {
+				return columnName, i
+			}
+		}
+	}
+	
+	return "", -1
 }
 
 // GetConfigFilePathBasedOnOS returns the config folder path based on the OS.

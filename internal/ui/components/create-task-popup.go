@@ -22,13 +22,11 @@ type CreateTaskPopup struct {
 func NewCreateTaskPopup(fullWidth int, fullHeight int, config *domain.UserConfig, boardName string) *CreateTaskPopup {
 	component := new(CreateTaskPopup)
 	
-	*component = CreateTaskPopup{
-		Visible:    false,
-		titleInput: cw.NewTextInput(),
-		descInput:  cw.NewTextInput(),
-		userConfig: config,
-		boardName:  boardName,
-	}
+	component.Visible = false
+	component.titleInput = cw.NewTextInput()
+	component.descInput = cw.NewTextInput()
+	component.userConfig = config
+	component.boardName = boardName
 
 	y1 := fullHeight/4
 
@@ -68,9 +66,19 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 		self.ToggleFocusOnNextField()
 	} else if event.ID == "<Enter>" {
 		// Save the task.
-		task := new(domain.Task)
+		boardOpt := self.userConfig.GetBoard(self.boardName)
+		board := boardOpt.Expect("Board was found to be null while handling <Enter> on task creation.")
 		
-		*task = domain.NewTask(
+		if len(board.Columns) == 0 {
+			utils.SaveLog(
+				utils.Error, 
+				"Board has no columns. Cannot create a task without a column.",
+				nil,
+			)
+			return
+		}
+		
+		task := domain.NewTask(
 			self.titleInput.GetText(), 
 			self.descInput.GetText(),
 		)

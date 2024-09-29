@@ -33,7 +33,7 @@ func (app *App) handleKeymap(event termui.Event) {
 	}
 	
 	switch event.ID {
-	case "h", "?":
+	case "?":
 		{
 			// Handle help key logic here
 		}
@@ -52,6 +52,9 @@ func (app *App) handleKeymap(event termui.Event) {
 			}
 		}
 	default:
-		return
+		{
+			app.tasksView.HandleMovements(event.ID)
+			app.render()
+		}
 	}
 }

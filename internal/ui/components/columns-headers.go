@@ -14,10 +14,7 @@ type ColumnsHeaderComponent struct {
 func NewColumnsHeaderComponent(fullWidth int, fullHeight int, columnNames []string) *ColumnsHeaderComponent {
 	component := new(ColumnsHeaderComponent)
 	
-	*component = ColumnsHeaderComponent{
-		NeedsRedraw: true,
-		columnBoxes: []*widgets.Paragraph{},
-	}
+	component.NeedsRedraw = true
 	
 	// @Todo, @Cleanup: It maybe better to move this initialization of columns when there isn't any (on first startup)
 	// to somewhere else outside the renderer. So mutating the board for an initial state is handled before

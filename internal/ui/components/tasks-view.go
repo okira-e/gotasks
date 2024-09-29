@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"math"
 	"strings"
 
@@ -23,30 +22,118 @@ type TasksViewComponent struct {
 }
 
 func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *TasksViewComponent {
-	component := new(TasksViewComponent)
+	ret := new(TasksViewComponent)
 	
-	*component = TasksViewComponent{
-		width:   		fullWidth,
-		height:   		fullHeight,
-		board:			board,
-		NeedsRedraw: 	true,
-		tasksWidgets: 	[]*widgets.Paragraph{},
+	ret.width = fullWidth
+	ret.height = fullHeight
+	ret.board = board
+	ret.NeedsRedraw = true
+	ret.tasksWidgets = []*widgets.Paragraph{}
+	
+	ret.tasksWidgets = ret.drawTasks()
+	
+	return ret
+}
+
+// HandleMovements changes the reference in self.taskInFocus
+func (self *TasksViewComponent) HandleMovements(key string) {
+	if self.taskInFocus == nil {
+		self.setDefaultFocusedWidget()
 	}
 	
-	component.tasksWidgets = component.drawTasks()
-	return component
+	colName, _ := self.board.GetColumnForTask(self.taskInFocus)
+	tasks := self.board.Tasks[colName]
+	
+	// @Speed: Movement now is an O(n) operation on every key stroke because we use a simple dynamic array
+	// to store tasks for each column. A more sophesticated DS like a Linked List would benefit vertical 
+	// movemnet here for example.
+	switch key {
+		case "j", "<Down>", "k", "<Up>":
+			{
+				if key == "j" || key == "<Down>" {
+					for i := len(tasks) - 1; i >= 0; i -= 1 {
+						if tasks[i].Id == self.taskInFocus.Id {
+							if i - 1 >= 0 {
+								self.taskInFocus = tasks[i - 1]
+							}
+							break
+						}
+					}
+				} else if key == "k" || key == "<Up>" {
+					for i := len(tasks) - 1; i >= 0; i -= 1 {
+						if tasks[i].Id == self.taskInFocus.Id {
+							if i + 1 <= len(tasks) - 1 {
+								self.taskInFocus = tasks[i + 1]
+							}
+							break
+						}
+					}
+				}
+			}
+		case "h", "<Left>", "l", "<Right>":
+			{
+				if len(self.board.Columns) == 0 {
+					return
+				}
+				
+				_, columnIndexForTask := self.board.GetColumnForTask(self.taskInFocus)
+				var columnToMoveTo string
+				
+				if key == "l" || key == "<Right>" {
+					nextColumnIndex := columnIndexForTask + 1
+					
+					if nextColumnIndex >= len(self.board.Columns) {
+						return
+					}
+					
+					nextColumnName := self.board.Columns[nextColumnIndex]
+					
+					for len(self.board.Tasks[nextColumnName]) == 0 {
+						nextColumnIndex += 1
+						
+						if nextColumnIndex > len(self.board.Columns) {
+							return
+						}
+						
+						nextColumnName = self.board.Columns[nextColumnIndex]
+					}
+					
+					columnToMoveTo = nextColumnName
+				} else {
+					prevColumnIndex := columnIndexForTask - 1
+					
+					if prevColumnIndex < 0 {
+						return
+					}
+					
+					prevColumnName := self.board.Columns[prevColumnIndex]
+					
+					for len(self.board.Tasks[prevColumnName]) == 0 {
+						prevColumnIndex -= 1
+						
+						if prevColumnIndex < 0 {
+							return
+						}
+						
+						prevColumnName = self.board.Columns[prevColumnIndex]
+					}
+					
+					columnToMoveTo = prevColumnName
+				}
+				
+				self.taskInFocus = self.board.Tasks[columnToMoveTo][len(self.board.Tasks[columnToMoveTo]) - 1] // We set it to the last task not the first because we render the last one ontop.
+			}
+		default:
+	}
+	
+	self.UpdateTasks()
 }
 
 func (self *TasksViewComponent) UpdateTasks() {
 	self.tasksWidgets = self.drawTasks()
 }
 
-func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
-	ret := []*widgets.Paragraph{}
-	
-	widgetWidth := self.width / len(self.board.Columns)
-	const widthPadding = 4
-
+func (self *TasksViewComponent) setDefaultFocusedWidget() {
 	// Set the task in focus to be the first task you encounter (doesn't necessarily mean the first column.)
 	found := false
 	for _, columnName := range self.board.Columns {
@@ -68,6 +155,17 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 			found = true
 			break
 		}
+	}
+}
+
+func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
+	ret := []*widgets.Paragraph{}
+	
+	widgetWidth := self.width / len(self.board.Columns)
+	const widthPadding = 4
+
+	if self.taskInFocus == nil {
+		self.setDefaultFocusedWidget()
 	}
 	
 	// @Todo: Right now we don't have any sort of scrolling for overflowing tasks.
@@ -100,9 +198,9 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 			widget := widgets.NewParagraph()
 			widget.Border = true
 			
+			
 			// if task.Id == "74ac4c49-e5f6-4bb1-86a7-a050adb6295d" {
 			if task == self.taskInFocus{
-				fmt.Println("TAK: ", )
 				widget.BorderStyle = termui.NewStyle(termui.ColorBlue)
 			}
 			
