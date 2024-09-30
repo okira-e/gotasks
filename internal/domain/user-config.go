@@ -110,12 +110,18 @@ func NewDefaultUserConfig() *UserConfig {
 	return ret
 }
 
-// AddBoard adds a new board to the config.
-func (self *UserConfig) AddBoard(boardName string, dirPath string) error {
+// CreateBoard adds a new board to the config.
+func (self *UserConfig) CreateBoard(boardName string, dirPath string) error {
 	board := new(Board)
 	
 	board.Name = boardName
 	board.Dir = dirPath
+	board.Columns = []string{
+		"Todo",
+		"In Progress",
+		"Done",
+	}
+	board.Tasks = map[string][]*Task{}
 	
 	// Add the newly created board to the config.
 	self.Boards = append(self.Boards, board)
@@ -180,10 +186,8 @@ func (self *UserConfig) UpdateBoard(board *Board) error {
 
 // AddColumnToBoard adds a column to the board of the board with the given name.
 func (self *UserConfig) AddColumnToBoard(boardName string, columnName string) error {
-	var board *Board = nil
-	
 	boardOpt := self.GetBoard(boardName)
-	board = boardOpt.Expect("Failed to find board whole adding a column.")
+	board := boardOpt.Expect("Failed to find board whole adding a column.")
 
 	board.Columns = append(board.Columns, columnName)
 	

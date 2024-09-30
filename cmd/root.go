@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/okira-e/gotasks/cmd/board"
 	"github.com/okira-e/gotasks/internal/domain"
 	"github.com/okira-e/gotasks/internal/ui"
-	"github.com/okira-e/gotasks/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -67,17 +67,13 @@ between a to-do list and a Jira board that is accessible from the terminal.
 		
 		if boardName == "" {
 			_, boardName = getLastDirName(originalPwd)
-			userConfig.AddBoard(boardName, originalPwd)
+			userConfig.CreateBoard(boardName, originalPwd)
 		}
 		
-		// Initialize the App
 		app, err := ui.NewApp(userConfig, boardName)
 		if err != nil {
 			log.Fatalf("Failed to initialize app. %v", err)
 		}
-		
-		utils.SaveLog(utils.Info, "Initialized App", nil)
-
 		app.Run()
 	},
 }
@@ -85,6 +81,9 @@ between a to-do list and a Jira board that is accessible from the terminal.
 func Execute() {
 	rootCmd.AddCommand(ListAllBoards)
 	rootCmd.AddCommand(OpenConfig)
+	rootCmd.AddCommand(board.BoardCmd)
+	
+	board.BoardCmd.AddCommand(board.OpenBoardByName)
 
 	err := rootCmd.Execute()
 	if err != nil {

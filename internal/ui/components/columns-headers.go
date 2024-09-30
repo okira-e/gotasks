@@ -16,24 +16,6 @@ func NewColumnsHeaderComponent(fullWidth int, fullHeight int, columnNames []stri
 	
 	component.NeedsRedraw = true
 	
-	// @Todo, @Cleanup: It maybe better to move this initialization of columns when there isn't any (on first startup)
-	// to somewhere else outside the renderer. So mutating the board for an initial state is handled before
-	// asking the renderer to render anything.
-	// if len(columnNames) == 0 {
-	// 	err := app.userConfig.AddColumnToBoard(board.Name, "Todo")
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to add a %s column. %s", "Todo", err)
-	// 	}
-	// 	err = app.userConfig.AddColumnToBoard(board.Name, "In Progress")
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to add a %s column. %s", "In Progress", err)
-	// 	}
-	// 	err = app.userConfig.AddColumnToBoard(board.Name, "Done")
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to add a %s column. %s", "Done", err)
-	// 	}
-	// }
-
 	widgetWidth := fullWidth / len(columnNames)
 
 	for i, columnName := range columnNames {
