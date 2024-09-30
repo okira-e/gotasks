@@ -84,6 +84,7 @@ between a to-do list and a Jira board that is accessible from the terminal.
 
 func Execute() {
 	rootCmd.AddCommand(ListAllBoards)
+	rootCmd.AddCommand(OpenConfig)
 
 	err := rootCmd.Execute()
 	if err != nil {

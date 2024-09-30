@@ -12,7 +12,7 @@ import (
 
 var ListAllBoards = &cobra.Command{
 	Use:   "list",
-	Short: "List all the boards.",
+	Short: "List all the boards",
 	Long:  `List all boards saved in the user config.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := domain.GetUserConfig()
