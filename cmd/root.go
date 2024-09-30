@@ -76,7 +76,7 @@ between a to-do list and a Jira board that is accessible from the terminal.
 			log.Fatalf("Failed to initialize app. %v", err)
 		}
 		
-		utils.SaveLog(utils.Info, "Initialized App", map[string]any{"some_data": app})
+		utils.SaveLog(utils.Info, "Initialized App", nil)
 
 		app.Run()
 	},

@@ -19,6 +19,7 @@ type TasksViewComponent struct {
 	board        	*domain.Board
 	// ID of the task that should be in focus.
 	taskInFocus		*domain.Task
+	scroll			int
 }
 
 func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *TasksViewComponent {
@@ -123,6 +124,20 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 				
 				self.taskInFocus = self.board.Tasks[columnToMoveTo][len(self.board.Tasks[columnToMoveTo]) - 1] // We set it to the last task not the first because we render the last one ontop.
 			}
+		case "n":
+			{
+				// Scroll infinitely for now.
+				self.scroll += 1
+				self.setDefaultFocusedWidget()
+			}
+		case "p":
+			{
+				newScroll := self.scroll - 1
+				
+				if newScroll >= 0 {
+					self.scroll = newScroll
+				}
+			}
 		default:
 	}
 	
@@ -147,10 +162,8 @@ func (self *TasksViewComponent) setDefaultFocusedWidget() {
 		
 		// Set the first task found IN REVERSE to be the focused one.
 		// We do this in reverse because the task rows are rendered in reverse.
-		// for _, task := range ret.board.Tasks[columnName] {
-		for i := len(self.board.Tasks[columnName]) - 1; i >= 0; i -= 1 {
+		for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
 			task := self.board.Tasks[columnName][i]
-			// self.taskInFocus = task.Id
 			self.taskInFocus = task
 			found = true
 			break
@@ -168,13 +181,12 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 		self.setDefaultFocusedWidget()
 	}
 	
-	// @Todo: Right now we don't have any sort of scrolling for overflowing tasks.
 	for columnIndex, columnName := range self.board.Columns {
 		// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
 		differentWidgetsLengths := []int{}
 
 		// Make the paragraph widgets and append them but in reverse. So last task in self.board.Tasks["Todo"] is rendered ontop.
-		for i := len(self.board.Tasks[columnName]) - 1; i >= 0; i -= 1 {
+		for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
 			task := self.board.Tasks[columnName][i]
 			
 			widgetLength := 2 // Border lines.
