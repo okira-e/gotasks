@@ -50,7 +50,7 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 	
 	// @Speed: Movement now is an O(n) operation on every key stroke because we use a simple dynamic array
 	// to store tasks for each column. A more sophesticated DS like a Linked List would benefit vertical 
-	// movemnet here for example.
+	// movemnet here for example. But n here is so small that it isn't worth it to waste a second optimizing this.
 	switch key {
 		case "j", "<Down>", "k", "<Up>":
 			{
