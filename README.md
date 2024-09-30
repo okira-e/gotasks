@@ -31,6 +31,8 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 - `p`: Scrolls the view one task up
 - `g`: Selects the top most task in the current column
 - `G`: Selects the bottom most task in the current column
+- `]`: Move task to the next column
+- `[`: Move task to the previous column
 
 ## Actions
 - `c`: Opens the popup for creating a new task. New tasks will appear on-top and in the left-most column

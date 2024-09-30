@@ -18,17 +18,19 @@ type TasksViewComponent struct {
 	width        	int
 	height       	int
 	board        	*domain.Board
+	userConfig      *domain.UserConfig
 	// ID of the task that should be in focus.
 	taskInFocus		*domain.Task
 	scroll			int
 }
 
-func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board) *TasksViewComponent {
+func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board, userConfig *domain.UserConfig) *TasksViewComponent {
 	ret := new(TasksViewComponent)
 	
 	ret.width = fullWidth
 	ret.height = fullHeight
 	ret.board = board
+	ret.userConfig = userConfig
 	ret.NeedsRedraw = true
 	ret.tasksWidgets = []*widgets.Paragraph{}
 	
@@ -145,7 +147,7 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 			{
 				column, i := self.board.GetColumnForTask(self.taskInFocus)
 				if i == -1 {
-					log.Fatalf("Failed to fidn the column for task on scrolling to top.")
+					log.Fatalf("Failed to find the column for task on scrolling to top.")
 				}
 				
 				self.scroll = 0
@@ -155,10 +157,36 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 			{
 				column, i := self.board.GetColumnForTask(self.taskInFocus)
 				if i == -1 {
-					log.Fatalf("Failed to fidn the column for task on scrolling to bottom.")
+					log.Fatalf("Failed to find the column for task on scrolling to bottom.")
 				}
 				
 				self.setFocusOnBottonTask(column)
+			}
+		case "]":
+			{
+				err := self.userConfig.MoveTaskRight(self.board, self.taskInFocus)
+				if err != nil {
+					utils.SaveLog(
+						utils.Error, 
+						"Failed to move task to the right. " + err.Error(), 
+						map[string]any{
+							"task": self.taskInFocus.Title,
+						},
+					)
+				}
+			}
+		case "[":
+			{
+				err := self.userConfig.MoveTaskLeft(self.board, self.taskInFocus)
+				if err != nil {
+					utils.SaveLog(
+						utils.Error, 
+						"Failed to move task to the left. " + err.Error(), 
+						map[string]any{
+							"task": self.taskInFocus.Title,
+						},
+					)
+				}
 			}
 		default:
 	}
@@ -250,7 +278,7 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 				))
 			}
 
-			// Set a minimum length size for every ticket.
+			// Set a minimum length size for every task.
 			if widgetLength < 6 {
 				widgetLength = 6
 			}

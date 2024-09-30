@@ -218,6 +218,72 @@ func (self UserConfig) writeToDisk() error {
 	return nil
 }
 
+// MoveTaskRight moves the task to the right column of the one its currently on and removes it
+// from the old column.
+func (self *UserConfig) MoveTaskRight(board *Board, task *Task) error {
+	oldColumn, i := board.GetColumnForTask(task)
+	if i == -1 {
+		log.Fatalf("Failed to find the column for task on scrolling to bottom.")
+	}
+	
+	nextColumnIndex := i + 1
+	if nextColumnIndex >= len(board.Columns) {
+		return nil
+	}
+	
+	nextColumn := board.Columns[nextColumnIndex]
+	
+	board.Tasks[nextColumn] = append(board.Tasks[nextColumn], task)
+	
+	// Remove task from previous column
+	for i, it := range board.Tasks[oldColumn] {
+		if it == task {
+			board.Tasks[oldColumn] = append(board.Tasks[oldColumn][:i], board.Tasks[oldColumn][i+1:]...)
+			break
+		}
+	}
+
+	err := self.UpdateBoard(board)
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+
+// MoveTaskLeft moves the task to the left column of the one its currently on and removes it
+// from the old column.
+func (self *UserConfig) MoveTaskLeft(board *Board, task *Task) error {
+	oldColumn, i := board.GetColumnForTask(task)
+	if i == -1 {
+		log.Fatalf("Failed to find the column for task on scrolling to bottom.")
+	}
+	
+	prevColumnIndex := i - 1
+	if prevColumnIndex < 0 {
+		return nil
+	}
+	
+	prevColumn := board.Columns[prevColumnIndex]
+	
+	board.Tasks[prevColumn] = append(board.Tasks[prevColumn], task)
+	
+	// Remove task from previous column
+	for i, it := range board.Tasks[oldColumn] {
+		if it == task {
+			board.Tasks[oldColumn] = append(board.Tasks[oldColumn][:i], board.Tasks[oldColumn][i+1:]...)
+			break
+		}
+	}
+
+	err := self.UpdateBoard(board)
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+
 type Board struct {
 	Name    string   `json:"name"`
 	Dir     string   `json:"dir"`
@@ -226,12 +292,11 @@ type Board struct {
 	Tasks map[string][]*Task `json:"tasks"`
 }
 
-
 // GetColumnForTask returns the name and the index of the column that this task belongs to. 
 // It returns -1 as the index if didn't find the column.
-func (self *Board) GetColumnForTask(task *Task) (string, int) {
-	for i, columnName := range self.Columns {
-		for _, it := range self.Tasks[columnName] {
+func (board *Board) GetColumnForTask(task *Task) (string, int) {
+	for i, columnName := range board.Columns {
+		for _, it := range board.Tasks[columnName] {
 			if it == task {
 				return columnName, i
 			}

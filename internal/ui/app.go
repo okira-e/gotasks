@@ -67,7 +67,7 @@ func NewApp(userConfig *domain.UserConfig, boardName string) (*App, error) {
 	app.theme = theme
 	app.createTaskPopup = components.NewCreateTaskPopup(width, height, userConfig, boardName)
 	app.columnsHeadersView = components.NewColumnsHeaderComponent(width, height, board.Columns)
-	app.tasksView = components.NewTasksViewComponent(width, height, board)
+	app.tasksView = components.NewTasksViewComponent(width, height, board, userConfig)
 
 	return app, nil
 }
