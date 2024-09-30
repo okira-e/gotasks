@@ -1,6 +1,7 @@
 package components
 
 import (
+	"log"
 	"math"
 	"strings"
 
@@ -77,6 +78,8 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 					return
 				}
 				
+				self.scroll = 0
+				
 				_, columnIndexForTask := self.board.GetColumnForTask(self.taskInFocus)
 				var columnToMoveTo string
 				
@@ -138,6 +141,25 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 					self.scroll = newScroll
 				}
 			}
+		case "g":
+			{
+				column, i := self.board.GetColumnForTask(self.taskInFocus)
+				if i == -1 {
+					log.Fatalf("Failed to fidn the column for task on scrolling to top.")
+				}
+				
+				self.scroll = 0
+				self.setFocusOnTopTask(column)
+			}
+		case "G":
+			{
+				column, i := self.board.GetColumnForTask(self.taskInFocus)
+				if i == -1 {
+					log.Fatalf("Failed to fidn the column for task on scrolling to bottom.")
+				}
+				
+				self.setFocusOnBottonTask(column)
+			}
 		default:
 	}
 	
@@ -169,6 +191,32 @@ func (self *TasksViewComponent) setDefaultFocusedWidget() {
 			break
 		}
 	}
+}
+
+func (self *TasksViewComponent) setFocusOnTopTask(columnName string) {
+	if _, ok := self.board.Tasks[columnName]; !ok {
+		return
+	}
+	
+	len := len(self.board.Tasks[columnName])
+	
+	if len == 0 {
+		return
+	}
+	
+	self.taskInFocus = self.board.Tasks[columnName][len - 1]
+}
+
+func (self *TasksViewComponent) setFocusOnBottonTask(columnName string) {
+	if _, ok := self.board.Tasks[columnName]; !ok {
+		return
+	}
+	
+	if len(self.board.Tasks[columnName]) == 0 {
+		return
+	}
+	
+	self.taskInFocus = self.board.Tasks[columnName][0]
 }
 
 func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
