@@ -80,7 +80,7 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 					return
 				}
 				
-				self.scroll = 0
+				self.scroll = 0 // Reset the scroll to be ontop
 				
 				_, columnIndexForTask := self.board.GetColumnForTask(self.taskInFocus)
 				var columnToMoveTo string
@@ -97,7 +97,7 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 					for len(self.board.Tasks[nextColumnName]) == 0 {
 						nextColumnIndex += 1
 						
-						if nextColumnIndex > len(self.board.Columns) {
+						if nextColumnIndex > len(self.board.Columns) - 1 {
 							return
 						}
 						
