@@ -65,6 +65,10 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 	} else if event.ID == "<Tab>" {
 		self.ToggleFocusOnNextField()
 	} else if event.ID == "<Enter>" {
+		if self.titleInput.GetText() == "" {
+			return
+		}
+		
 		// Save the task.
 		boardOpt := self.userConfig.GetBoard(self.boardName)
 		board := boardOpt.Expect("Board was found to be null while handling <Enter> on task creation.")
