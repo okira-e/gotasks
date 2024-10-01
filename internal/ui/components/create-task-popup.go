@@ -9,7 +9,6 @@ import (
 
 type CreateTaskPopup struct {
 	Visible 		bool
-	NeedsRedraw  	bool
 	
 	titleInput   	*cw.TextInput
 	descInput    	*cw.TextInput
@@ -129,7 +128,6 @@ func (self *CreateTaskPopup) ToggleFocusOnNextField() {
 // Draw renders the popup if visible.
 func (self *CreateTaskPopup) Draw() {
 	self.Visible = true
-	self.NeedsRedraw = false
 	
 	// Set the border to be blue on the input field that is in focus.
 	if self.focusedField != nil {

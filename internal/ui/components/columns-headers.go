@@ -7,14 +7,11 @@ import (
 )
 
 type ColumnsHeaderComponent struct {
-	NeedsRedraw  	bool
     columnBoxes []*widgets.Paragraph
 }
 
 func NewColumnsHeaderComponent(fullWidth int, fullHeight int, columnNames []string) *ColumnsHeaderComponent {
 	component := new(ColumnsHeaderComponent)
-	
-	component.NeedsRedraw = true
 	
 	widgetWidth := fullWidth / len(columnNames)
 
@@ -51,8 +48,6 @@ func (self *ColumnsHeaderComponent) GetAllDrawableWidgets() []termui.Drawable {
 
 
 func (self *ColumnsHeaderComponent) Draw() {
-	self.NeedsRedraw = false
-	
 	termui.Render(
 		self.GetAllDrawableWidgets()...
 	)

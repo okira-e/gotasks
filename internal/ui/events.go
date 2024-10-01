@@ -46,7 +46,6 @@ func (app *App) handleKeymap(event termui.Event) {
 		{
 			if !app.createTaskPopup.Visible {
 				app.createTaskPopup.Visible = true
-				app.createTaskPopup.NeedsRedraw = true
 				
 				app.render()
 			}

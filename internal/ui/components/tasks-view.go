@@ -12,7 +12,6 @@ import (
 )
 
 type TasksViewComponent struct {
-	NeedsRedraw bool
 	// Represents a card on the board. Wherever it is.
 	tasksWidgets 	[]*widgets.Paragraph
 	width        	int
@@ -31,7 +30,6 @@ func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board, u
 	ret.height = fullHeight
 	ret.board = board
 	ret.userConfig = userConfig
-	ret.NeedsRedraw = true
 	ret.tasksWidgets = []*widgets.Paragraph{}
 	
 	ret.tasksWidgets = ret.drawTasks()
@@ -187,6 +185,12 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 						},
 					)
 				}
+			}
+		case "d":
+			{
+				
+				
+				// self.userConfig.DeleteTask(self.board, self.taskInFocus)
 			}
 		default:
 	}
@@ -350,8 +354,6 @@ func (self *TasksViewComponent) GetAllDrawableWidgets() []termui.Drawable {
 
 
 func (self *TasksViewComponent) Draw() {
-	self.NeedsRedraw = false
-	
 	self.UpdateTasks()
 	
 	termui.Render(
