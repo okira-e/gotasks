@@ -2,7 +2,7 @@
 Ever wanted an alternative to the todo.txt file in your project directory that isn't a full web app running in a browser that has hundreds of networking features that you don't want? This is what GoTasks is for!
 It is a simple `gotasks` command that you run in the directory (or sub directory) of you project in your terminal and it immediately gives you a Kanban of all your tasks and progress.
 
-![promo](./resources/promo.gif)
+![promo](./assets/preview_screenshot.png)
 
 ## Installations
 Binaries are provided in the Releases section. If your target computer isn't covered, you can always build from source.
