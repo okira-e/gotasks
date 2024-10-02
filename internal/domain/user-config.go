@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/gizak/termui/v3"
 	"github.com/okira-e/gotasks/internal/opt"
 	"github.com/okira-e/gotasks/internal/utils"
 )
@@ -51,7 +52,8 @@ import (
 
 
 type UserConfig struct {
-	Boards []*Board `json:"boards"`
+	PrimaryColor 	termui.Color	`json:"primary_color"`
+	Boards 			[]*Board 		`json:"boards"`
 }
 
 // DoesUserConfigExist checks if a user config has already be generated for this user.
@@ -106,6 +108,8 @@ func GetUserConfig() (*UserConfig, error) {
 
 func NewDefaultUserConfig() *UserConfig {
 	ret := new(UserConfig)
+	
+	ret.PrimaryColor = termui.ColorBlue
 	
 	return ret
 }

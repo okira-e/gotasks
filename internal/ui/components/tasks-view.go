@@ -293,7 +293,7 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 			
 			// if task.Id == "74ac4c49-e5f6-4bb1-86a7-a050adb6295d" {
 			if task == self.taskInFocus{
-				widget.BorderStyle = termui.NewStyle(termui.ColorBlue)
+				widget.BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
 			}
 			
 			widget.WrapText = true

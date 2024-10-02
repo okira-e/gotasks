@@ -131,7 +131,7 @@ func (self *CreateTaskPopup) Draw() {
 	
 	// Set the border to be blue on the input field that is in focus.
 	if self.focusedField != nil {
-		self.focusedField.GetDrawableWidget().BorderStyle = termui.NewStyle(termui.ColorBlue)
+		self.focusedField.GetDrawableWidget().BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
 	}
 	
 	termui.Render(
