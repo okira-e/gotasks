@@ -55,6 +55,13 @@ func (app *App) handleKeymap(event termui.Event) {
 				app.createTaskPopup.Show()
 			}
 		}
+	case "e":
+		{
+			if app.tasksView.TaskInFocus != nil {
+				app.createTaskPopup.SetEditEditingTask(app.tasksView.TaskInFocus)
+				app.createTaskPopup.Show()
+			}
+		}
 	case "d":
 		{
 			if !app.confirmationPopup.Visible {

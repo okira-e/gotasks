@@ -9,6 +9,8 @@ import (
 
 type CreateTaskPopup struct {
 	Visible 		bool
+	// EditingTask if this is set, the widget becomes an edit popup that shows & edits existing data.
+	EditingTask		*domain.Task
 	
 	titleInput   	*cw.TextInput
 	descInput    	*cw.TextInput
@@ -51,6 +53,13 @@ func NewCreateTaskPopupComponent(fullWidth int, fullHeight int, config *domain.U
 	return component
 }
 
+func (self *CreateTaskPopup) SetEditEditingTask(task *domain.Task) {
+	self.EditingTask = task
+	
+	self.titleInput.SetText(task.Title)
+	self.descInput.SetText(task.Description)
+}
+
 func (self *CreateTaskPopup) GetAllDrawableWidgets() []termui.Drawable {
 	return []termui.Drawable{
 		self.titleInput.GetDrawableWidget(),
@@ -81,14 +90,24 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 			return
 		}
 		
-		task := domain.NewTask(
-			self.titleInput.GetText(), 
-			self.descInput.GetText(),
-		)
+		// If we are not in edit mode, create a new task. Otherwise, just simple edit the pointer
+		// to the task we're editing.
 		
-		err := self.userConfig.AddTask(self.boardName, task)
-		if err != nil {
-			utils.SaveLog(utils.Error, err.Error(), map[string]any{"boardName": self.boardName, "task": task})
+		if self.EditingTask == nil {
+			task := domain.NewTask(
+				self.titleInput.GetText(), 
+				self.descInput.GetText(),
+			)
+			
+			err := self.userConfig.AddTask(self.boardName, task)
+			if err != nil {
+				utils.SaveLog(utils.Error, err.Error(), map[string]any{"boardName": self.boardName, "task": task})
+			}
+		} else {
+			self.EditingTask.Title = self.titleInput.GetText()
+			self.EditingTask.Description = self.descInput.GetText()
+			
+			self.userConfig.UpdateBoard(board)
 		}
 		
 		self.Hide()
@@ -107,7 +126,6 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 
 func (self *CreateTaskPopup) Show() {
 	self.Visible = true
-	self.reset()
 }
 
 func (self *CreateTaskPopup) Hide() {

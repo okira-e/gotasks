@@ -34,6 +34,10 @@ func (self *TextInput) GetDrawableWidget() *widgets.Paragraph {
 	return self.drawableWidget
 }
 
+func (self *TextInput) SetText(text string) {
+	self.textBuilder.WriteString(text)
+}
+
 func (self *TextInput) GetText() string {
 	return self.textBuilder.String()
 }
