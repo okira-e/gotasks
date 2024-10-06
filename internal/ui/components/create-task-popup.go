@@ -17,8 +17,8 @@ type CreateTaskPopup struct {
 	boardName		string
 }
 
-// NewCreateTaskPopup initializes a new popup.
-func NewCreateTaskPopup(fullWidth int, fullHeight int, config *domain.UserConfig, boardName string) *CreateTaskPopup {
+// NewCreateTaskPopupComponent initializes a new popup.
+func NewCreateTaskPopupComponent(fullWidth int, fullHeight int, config *domain.UserConfig, boardName string) *CreateTaskPopup {
 	component := new(CreateTaskPopup)
 	
 	component.Visible = false
@@ -105,11 +105,14 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 	}
 }
 
+func (self *CreateTaskPopup) Show() {
+	self.Visible = true
+	self.reset()
+}
+
 func (self *CreateTaskPopup) Hide() {
 	self.Visible = false
-	self.focusedField = self.titleInput
-	self.titleInput.Flush()
-	self.descInput.Flush()
+	self.reset()
 }
 
 // Toggles the focus onto the next input field.
@@ -137,4 +140,10 @@ func (self *CreateTaskPopup) Draw() {
 	termui.Render(
 		self.GetAllDrawableWidgets()...
 	)
+}
+
+func (self *CreateTaskPopup) reset() {
+	self.focusedField = self.titleInput
+	self.titleInput.Flush()
+	self.descInput.Flush()
 }

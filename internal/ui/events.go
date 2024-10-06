@@ -32,6 +32,13 @@ func (app *App) handleKeymap(event termui.Event) {
 		return
 	}
 	
+	if app.confirmationPopup.Visible {
+		app.confirmationPopup.HandleInput(event)
+		app.render()
+		
+		return
+	}
+	
 	switch event.ID {
 	case "?":
 		{
@@ -45,15 +52,30 @@ func (app *App) handleKeymap(event termui.Event) {
 	case "c":
 		{
 			if !app.createTaskPopup.Visible {
-				app.createTaskPopup.Visible = true
-				
-				app.render()
+				app.createTaskPopup.Show()
 			}
 		}
-	default:
+	case "d":
 		{
-			app.tasksView.HandleMovements(event.ID)
-			app.render()
+			if !app.confirmationPopup.Visible {
+				action := func(choice bool) {
+					if choice == false {
+						return
+					}
+					
+					app.userConfig.DeleteTask(app.boardName, app.tasksView.TaskInFocus)
+					app.tasksView.SetDefaultFocusedWidget()
+				}
+				
+				app.confirmationPopup.SetMessageAndAction("Are you sure you want to delete this task?", action)
+				app.confirmationPopup.Show()
+			}
+		}
+	default: // Handles the movements/action in the board view itself
+		{
+			app.tasksView.HandleKeymap(event.ID)
 		}
 	}
+	
+	app.render()
 }

@@ -19,7 +19,7 @@ type TasksViewComponent struct {
 	board        	*domain.Board
 	userConfig      *domain.UserConfig
 	// ID of the task that should be in focus.
-	taskInFocus		*domain.Task
+	TaskInFocus		*domain.Task
 	scroll			int
 }
 
@@ -37,13 +37,13 @@ func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board, u
 	return ret
 }
 
-// HandleMovements changes the reference in self.taskInFocus
-func (self *TasksViewComponent) HandleMovements(key string) {
-	if self.taskInFocus == nil {
-		self.setDefaultFocusedWidget()
+// HandleKeymap changes the reference in self.taskInFocus
+func (self *TasksViewComponent) HandleKeymap(key string) {
+	if self.TaskInFocus == nil {
+		self.SetDefaultFocusedWidget()
 	}
 	
-	colName, _ := self.board.GetColumnForTask(self.taskInFocus)
+	colName, _ := self.board.GetColumnForTask(self.TaskInFocus)
 	tasks := self.board.Tasks[colName]
 	
 	// @Speed: Movement now is an O(n) operation on every key stroke because we use a simple dynamic array
@@ -54,18 +54,18 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 			{
 				if key == "j" || key == "<Down>" {
 					for i := len(tasks) - 1; i >= 0; i -= 1 {
-						if tasks[i].Id == self.taskInFocus.Id {
+						if tasks[i].Id == self.TaskInFocus.Id {
 							if i - 1 >= 0 {
-								self.taskInFocus = tasks[i - 1]
+								self.TaskInFocus = tasks[i - 1]
 							}
 							break
 						}
 					}
 				} else if key == "k" || key == "<Up>" {
 					for i := len(tasks) - 1; i >= 0; i -= 1 {
-						if tasks[i].Id == self.taskInFocus.Id {
+						if tasks[i].Id == self.TaskInFocus.Id {
 							if i + 1 <= len(tasks) - 1 {
-								self.taskInFocus = tasks[i + 1]
+								self.TaskInFocus = tasks[i + 1]
 							}
 							break
 						}
@@ -80,7 +80,7 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 				
 				self.scroll = 0 // Reset the scroll to be ontop
 				
-				_, columnIndexForTask := self.board.GetColumnForTask(self.taskInFocus)
+				_, columnIndexForTask := self.board.GetColumnForTask(self.TaskInFocus)
 				var columnToMoveTo string
 				
 				if key == "l" || key == "<Right>" {
@@ -125,13 +125,13 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 					columnToMoveTo = prevColumnName
 				}
 				
-				self.taskInFocus = self.board.Tasks[columnToMoveTo][len(self.board.Tasks[columnToMoveTo]) - 1] // We set it to the last task not the first because we render the last one ontop.
+				self.TaskInFocus = self.board.Tasks[columnToMoveTo][len(self.board.Tasks[columnToMoveTo]) - 1] // We set it to the last task not the first because we render the last one ontop.
 			}
 		case "n":
 			{
 				// Scroll infinitely for now.
 				self.scroll += 1
-				self.setDefaultFocusedWidget()
+				self.SetDefaultFocusedWidget()
 			}
 		case "p":
 			{
@@ -143,7 +143,7 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 			}
 		case "g":
 			{
-				column, i := self.board.GetColumnForTask(self.taskInFocus)
+				column, i := self.board.GetColumnForTask(self.TaskInFocus)
 				if i == -1 {
 					log.Fatalf("Failed to find the column for task on scrolling to top.")
 				}
@@ -153,7 +153,7 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 			}
 		case "G":
 			{
-				column, i := self.board.GetColumnForTask(self.taskInFocus)
+				column, i := self.board.GetColumnForTask(self.TaskInFocus)
 				if i == -1 {
 					log.Fatalf("Failed to find the column for task on scrolling to bottom.")
 				}
@@ -162,35 +162,29 @@ func (self *TasksViewComponent) HandleMovements(key string) {
 			}
 		case "]":
 			{
-				err := self.userConfig.MoveTaskRight(self.board, self.taskInFocus)
+				err := self.userConfig.MoveTaskRight(self.board, self.TaskInFocus)
 				if err != nil {
 					utils.SaveLog(
 						utils.Error, 
 						"Failed to move task to the right. " + err.Error(), 
 						map[string]any{
-							"task": self.taskInFocus.Title,
+							"task": self.TaskInFocus.Title,
 						},
 					)
 				}
 			}
 		case "[":
 			{
-				err := self.userConfig.MoveTaskLeft(self.board, self.taskInFocus)
+				err := self.userConfig.MoveTaskLeft(self.board, self.TaskInFocus)
 				if err != nil {
 					utils.SaveLog(
 						utils.Error, 
 						"Failed to move task to the left. " + err.Error(), 
 						map[string]any{
-							"task": self.taskInFocus.Title,
+							"task": self.TaskInFocus.Title,
 						},
 					)
 				}
-			}
-		case "d":
-			{
-				
-				
-				// self.userConfig.DeleteTask(self.board, self.taskInFocus)
 			}
 		default:
 	}
@@ -202,7 +196,7 @@ func (self *TasksViewComponent) UpdateTasks() {
 	self.tasksWidgets = self.drawTasks()
 }
 
-func (self *TasksViewComponent) setDefaultFocusedWidget() {
+func (self *TasksViewComponent) SetDefaultFocusedWidget() {
 	// Set the task in focus to be the first task you encounter (doesn't necessarily mean the first column.)
 	found := false
 	for _, columnName := range self.board.Columns {
@@ -218,7 +212,7 @@ func (self *TasksViewComponent) setDefaultFocusedWidget() {
 		// We do this in reverse because the task rows are rendered in reverse.
 		for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
 			task := self.board.Tasks[columnName][i]
-			self.taskInFocus = task
+			self.TaskInFocus = task
 			found = true
 			break
 		}
@@ -236,7 +230,7 @@ func (self *TasksViewComponent) setFocusOnTopTask(columnName string) {
 		return
 	}
 	
-	self.taskInFocus = self.board.Tasks[columnName][len - 1]
+	self.TaskInFocus = self.board.Tasks[columnName][len - 1]
 }
 
 func (self *TasksViewComponent) setFocusOnBottonTask(columnName string) {
@@ -248,7 +242,7 @@ func (self *TasksViewComponent) setFocusOnBottonTask(columnName string) {
 		return
 	}
 	
-	self.taskInFocus = self.board.Tasks[columnName][0]
+	self.TaskInFocus = self.board.Tasks[columnName][0]
 }
 
 func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
@@ -257,8 +251,8 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 	widgetWidth := self.width / len(self.board.Columns)
 	const widthPadding = 4
 
-	if self.taskInFocus == nil {
-		self.setDefaultFocusedWidget()
+	if self.TaskInFocus == nil {
+		self.SetDefaultFocusedWidget()
 	}
 	
 	for columnIndex, columnName := range self.board.Columns {
@@ -292,7 +286,7 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 			
 			
 			// if task.Id == "74ac4c49-e5f6-4bb1-86a7-a050adb6295d" {
-			if task == self.taskInFocus{
+			if task == self.TaskInFocus{
 				widget.BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
 			}
 			

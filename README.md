@@ -34,7 +34,7 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 
 ## Actions
 - `c`: Opens the popup for creating a new task. New tasks will appear on-top and in the left-most column
-- `<Enter>`: On any task, opens the popup for editing/viewing the task
+- `d`: Deletes a task with a confirmation toggle
 - `]`: Move task to the next column
 - `[`: Move task to the previous column
 

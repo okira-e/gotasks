@@ -20,4 +20,8 @@ func (app *App) render() {
 		applyTheme(app.createTaskPopup, app.theme)
 		app.createTaskPopup.Draw()
 	}
+	
+	if app.confirmationPopup.Visible {
+		app.confirmationPopup.Draw()
+	}
 }

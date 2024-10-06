@@ -161,6 +161,46 @@ func (self *UserConfig) AddTask(boardName string, task *Task) error {
 	return nil
 }
 
+func (self *UserConfig) DeleteTask(boardName string, task *Task) error {
+	utils.SaveLog(utils.Debug, "Deleting a task", map[string]any{"task": task})
+	
+	boardOpt := self.GetBoard(boardName)
+	if boardOpt.IsNone() {
+		return errors.New("Couldn't find the board while trying to add a task")
+	}
+	
+	board := boardOpt.Unwrap()
+	
+	// Get the column for the task
+	column, columnIndex := board.GetColumnForTask(task)
+	if columnIndex < 0 {
+		utils.SaveLog(
+			utils.Error, 
+			"Couldn't Find column to the task while deleting it", 
+			map[string]any{"task": task},
+		)
+		
+		log.Fatalln("Couldn't Find column to the task while deleting it")
+	}
+	
+	// 
+	// Find and remove the task from this column
+	// 
+	
+	for i, it := range board.Tasks[column] {
+		if it == task {
+			board.Tasks[column] = append(board.Tasks[column][:i], board.Tasks[column][i+1:]...)
+		}
+	}
+	
+	err := self.UpdateBoard(board)
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+
 // GetBoard searches the config for a board with the given name.
 func (self *UserConfig) GetBoard(boardName string) opt.Option[*Board] {
 	for _, it := range self.Boards {
