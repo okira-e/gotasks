@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -75,7 +76,12 @@ func DoesUserConfigExist() (bool, error) {
 func SetupUserConfig() (*UserConfig, error) {
 	config := NewDefaultUserConfig()
 	
-	err := config.writeToDisk()
+	err := createDefaultConfigFiles()
+	if err != nil {
+		return nil, fmt.Errorf("Faield to create the paret config folder. %s", err)
+	}
+	
+	err = config.writeToDisk()
 	if err != nil {
 		return nil, err
 	}
@@ -247,20 +253,23 @@ func (self *UserConfig) AddColumnToBoard(boardName string, columnName string) er
 func (self UserConfig) writeToDisk() error { 
 	filePath, err := GetConfigFilePathBasedOnOS()
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to get the config file. %s", err)
 	}
 
-	file, _ := os.Create(filePath)
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("Failed to create config file.. %s", err)
+	}
 	defer file.Close()
 
 	fileContent, err := json.MarshalIndent(self, "", "\t")
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to marshal user config. %s", err)
 	}
 
 	_, err = file.Write(fileContent)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to write to disk. %s", err)
 	}
 	
 	return nil

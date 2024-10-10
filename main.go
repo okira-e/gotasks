@@ -24,6 +24,18 @@ func (f *CustomFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 func init() {
+	doesUserConfigExists, err := domain.DoesUserConfigExist()
+	if err != nil {
+		log.Fatalf("Failed to check if user config exists. %v", err)
+	}
+	
+	if !doesUserConfigExists {
+		_, err = domain.SetupUserConfig()
+		if err != nil {
+			log.Fatalf("Failed to setup the user config. %s", err)
+		}
+	}
+	
 	configPath, err := domain.GetConfigDirPathBasedOnOS()
 	if err != nil {
 		log.Fatalf("Couldn't get the config path to write logs at. %s", err)

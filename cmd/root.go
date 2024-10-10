@@ -3,10 +3,12 @@ package cmd
 import (
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/okira-e/gotasks/cmd/board"
 	"github.com/okira-e/gotasks/internal/domain"
 	"github.com/okira-e/gotasks/internal/ui"
+	"github.com/okira-e/gotasks/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -20,21 +22,9 @@ between a to-do list and a Jira board that is accessible from the terminal.
 	Run: func(cmd *cobra.Command, args []string) {
 		var userConfig *domain.UserConfig
 		
-		doesUserConfigExists, err := domain.DoesUserConfigExist()
+		userConfig, err := domain.GetUserConfig()
 		if err != nil {
-			log.Fatalf("Failed to check if user config exists. %v", err)
-		}
-		
-		if !doesUserConfigExists {
-			userConfig, err = domain.SetupUserConfig()
-			if err != nil {
-				log.Fatalf("Failed to setup the user config. %s", err)
-			}
-		} else {
-			userConfig, err = domain.GetUserConfig()
-			if err != nil {
-				log.Fatalf("Failed to setup the user config. %s", err)
-			}
+			log.Fatalf("Failed to get the user config. %s", err)
 		}
 		
 		// Assume this is not a new board/board.
@@ -46,12 +36,14 @@ between a to-do list and a Jira board that is accessible from the terminal.
 			log.Fatalf("Failed to get the current directory. %s", err)
 		}
 		
+		os := runtime.GOOS
+		
 		var boardName string
 		yeildedPwd := originalPwd
 		for yeildedPwd != "" {
 			var currentDirName string
 
-			yeildedPwd, currentDirName = getLastDirName(yeildedPwd)
+			yeildedPwd, currentDirName = getLastDirName(yeildedPwd, byte(utils.Cond(os == "windows", '\\', '/')))
 			if currentDirName == "" {
 				log.Fatalf("Failed to get the directory name.")
 			}
@@ -66,7 +58,7 @@ between a to-do list and a Jira board that is accessible from the terminal.
 		}
 		
 		if boardName == "" {
-			_, boardName = getLastDirName(originalPwd)
+			_, boardName = getLastDirName(originalPwd, byte(utils.Cond(os == "windows", '\\', '/')))
 			userConfig.CreateBoard(boardName, originalPwd)
 		}
 		
@@ -94,9 +86,14 @@ func Execute() {
 
 // getLastDirName takes in "/Users/You/Projects/Todo" and returns ("/Users/You/Projects", "Todo").
 // Returns an empty string if no "/" was found in the path.
-func getLastDirName(path string) (string, string) {
+func getLastDirName(path string, pathSeparator byte) (string, string) {
+	// Windows
+	if path[1:3] == ":\\" {
+		path = path[2:]
+	}
+	
 	for i := len(path) - 1; i >= 0; i-- {
-		if path[i] == '/' {
+		if path[i] == pathSeparator {
 			return path[:i], path[i+1:]
 		}
 	}
