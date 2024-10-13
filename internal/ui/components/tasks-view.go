@@ -50,143 +50,135 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 	// to store tasks for each column. A more sophesticated DS like a Linked List would benefit vertical 
 	// movemnet here for example. But n here is so small that it isn't worth it to waste a second optimizing this.
 	switch key {
-		case "j", "<Down>", "k", "<Up>":
-			{
-				if key == "j" || key == "<Down>" {
-					for i := len(tasks) - 1; i >= 0; i -= 1 {
-						if tasks[i].Id == self.TaskInFocus.Id {
-							if i - 1 >= 0 {
-								self.TaskInFocus = tasks[i - 1]
-							}
-							break
-						}
+	case "j", "<Down>", "k", "<Up>":
+		if key == "j" || key == "<Down>" {
+			for i := len(tasks) - 1; i >= 0; i -= 1 {
+				if tasks[i].Id == self.TaskInFocus.Id {
+					if i - 1 >= 0 {
+						self.TaskInFocus = tasks[i - 1]
 					}
-				} else if key == "k" || key == "<Up>" {
-					for i := len(tasks) - 1; i >= 0; i -= 1 {
-						if tasks[i].Id == self.TaskInFocus.Id {
-							if i + 1 <= len(tasks) - 1 {
-								self.TaskInFocus = tasks[i + 1]
-							}
-							break
-						}
-					}
+					
+					break
 				}
 			}
-		case "h", "<Left>", "l", "<Right>":
-			{
-				if len(self.board.Columns) == 0 {
+		} else if key == "k" || key == "<Up>" {
+			for i := len(tasks) - 1; i >= 0; i -= 1 {
+				if tasks[i].Id == self.TaskInFocus.Id {
+					if i + 1 <= len(tasks) - 1 {
+						self.TaskInFocus = tasks[i + 1]
+					}
+					
+					break
+				}
+			}
+		}
+		
+	case "h", "<Left>", "l", "<Right>":
+		if len(self.board.Columns) == 0 {
+			return
+		}
+		
+		self.scroll = 0 // Reset the scroll to be ontop
+		
+		_, columnIndexForTask := self.board.GetColumnForTask(self.TaskInFocus)
+		var columnToMoveTo string
+		
+		if key == "l" || key == "<Right>" {
+			nextColumnIndex := columnIndexForTask + 1
+			
+			if nextColumnIndex >= len(self.board.Columns) {
+				return
+			}
+			
+			nextColumnName := self.board.Columns[nextColumnIndex]
+			
+			for len(self.board.Tasks[nextColumnName]) == 0 {
+				nextColumnIndex += 1
+				
+				if nextColumnIndex > len(self.board.Columns) - 1 {
 					return
 				}
 				
-				self.scroll = 0 // Reset the scroll to be ontop
+				nextColumnName = self.board.Columns[nextColumnIndex]
+			}
+			
+			columnToMoveTo = nextColumnName
+		} else {
+			prevColumnIndex := columnIndexForTask - 1
+			
+			if prevColumnIndex < 0 {
+				return
+			}
+			
+			prevColumnName := self.board.Columns[prevColumnIndex]
+			
+			for len(self.board.Tasks[prevColumnName]) == 0 {
+				prevColumnIndex -= 1
 				
-				_, columnIndexForTask := self.board.GetColumnForTask(self.TaskInFocus)
-				var columnToMoveTo string
-				
-				if key == "l" || key == "<Right>" {
-					nextColumnIndex := columnIndexForTask + 1
-					
-					if nextColumnIndex >= len(self.board.Columns) {
-						return
-					}
-					
-					nextColumnName := self.board.Columns[nextColumnIndex]
-					
-					for len(self.board.Tasks[nextColumnName]) == 0 {
-						nextColumnIndex += 1
-						
-						if nextColumnIndex > len(self.board.Columns) - 1 {
-							return
-						}
-						
-						nextColumnName = self.board.Columns[nextColumnIndex]
-					}
-					
-					columnToMoveTo = nextColumnName
-				} else {
-					prevColumnIndex := columnIndexForTask - 1
-					
-					if prevColumnIndex < 0 {
-						return
-					}
-					
-					prevColumnName := self.board.Columns[prevColumnIndex]
-					
-					for len(self.board.Tasks[prevColumnName]) == 0 {
-						prevColumnIndex -= 1
-						
-						if prevColumnIndex < 0 {
-							return
-						}
-						
-						prevColumnName = self.board.Columns[prevColumnIndex]
-					}
-					
-					columnToMoveTo = prevColumnName
+				if prevColumnIndex < 0 {
+					return
 				}
 				
-				self.TaskInFocus = self.board.Tasks[columnToMoveTo][len(self.board.Tasks[columnToMoveTo]) - 1] // We set it to the last task not the first because we render the last one ontop.
+				prevColumnName = self.board.Columns[prevColumnIndex]
 			}
-		case "n":
-			{
-				// Scroll infinitely for now.
-				self.scroll += 1
-				self.SetDefaultFocusedWidget()
-			}
-		case "p":
-			{
-				newScroll := self.scroll - 1
-				
-				if newScroll >= 0 {
-					self.scroll = newScroll
-				}
-			}
-		case "g":
-			{
-				column, i := self.board.GetColumnForTask(self.TaskInFocus)
-				if i == -1 {
-					log.Fatalf("Failed to find the column for task on scrolling to top.")
-				}
-				
-				self.scroll = 0
-				self.setFocusOnTopTask(column)
-			}
-		case "G":
-			{
-				column, i := self.board.GetColumnForTask(self.TaskInFocus)
-				if i == -1 {
-					log.Fatalf("Failed to find the column for task on scrolling to bottom.")
-				}
-				
-				self.setFocusOnBottonTask(column)
-			}
-		case "]":
-			{
-				err := self.userConfig.MoveTaskRight(self.board, self.TaskInFocus)
-				if err != nil {
-					utils.SaveLog(
-						utils.Error, 
-						"Failed to move task to the right. " + err.Error(), 
-						map[string]any{
-							"task": self.TaskInFocus.Title,
-						},
-					)
-				}
-			}
-		case "[":
-			{
-				err := self.userConfig.MoveTaskLeft(self.board, self.TaskInFocus)
-				if err != nil {
-					utils.SaveLog(
-						utils.Error, 
-						"Failed to move task to the left. " + err.Error(), 
-						map[string]any{
-							"task": self.TaskInFocus.Title,
-						},
-					)
-				}
-			}
-		default:
+			
+			columnToMoveTo = prevColumnName
+		}
+		
+		self.TaskInFocus = self.board.Tasks[columnToMoveTo][len(self.board.Tasks[columnToMoveTo]) - 1] // We set it to the last task not the first because we render the last one ontop.
+
+	case "n":
+		// Scroll infinitely for now.
+		self.scroll += 1
+		self.SetDefaultFocusedWidget()
+		
+	case "p":
+		newScroll := self.scroll - 1
+		
+		if newScroll >= 0 {
+			self.scroll = newScroll
+		}
+		
+	case "g":
+		column, i := self.board.GetColumnForTask(self.TaskInFocus)
+		if i == -1 {
+			log.Fatalf("Failed to find the column for task on scrolling to top.")
+		}
+		
+		self.scroll = 0
+		self.setFocusOnTopTask(column)
+		
+	case "G":
+		column, i := self.board.GetColumnForTask(self.TaskInFocus)
+		if i == -1 {
+			log.Fatalf("Failed to find the column for task on scrolling to bottom.")
+		}
+		
+		self.setFocusOnBottonTask(column)
+		
+	case "]":
+		err := self.userConfig.MoveTaskRight(self.board, self.TaskInFocus)
+		if err != nil {
+			utils.SaveLog(
+				utils.Error, 
+				"Failed to move task to the right. " + err.Error(), 
+				map[string]any{
+					"task": self.TaskInFocus.Title,
+				},
+			)
+		}
+		
+	case "[":
+		err := self.userConfig.MoveTaskLeft(self.board, self.TaskInFocus)
+		if err != nil {
+			utils.SaveLog(
+				utils.Error, 
+				"Failed to move task to the left. " + err.Error(), 
+				map[string]any{
+					"task": self.TaskInFocus.Title,
+				},
+			)
+		}
 	}
 	
 	self.UpdateTasks()

@@ -32,29 +32,23 @@ func SaveLog(severity Severity, message string, context map[string]any) {
 	)
 	
 	switch severity {
-		case Info:
-		{
-			payload.Info(message)
+	case Info:
+		payload.Info(message)
+		
+	case Debug:
+		isDebugMode := os.Getenv(vars.DebugFlag)
+		
+		if isDebugMode == "true" {
+			payload.Debug(message)
 		}
-		case Debug:
-		{
-			isDebugMode := os.Getenv(vars.DebugFlag)
-			
-			if isDebugMode == "true" {
-				payload.Debug(message)
-			}
-		}
-		case Warn:
-		{
-			payload.Warn(message)
-		}
-		case Error:
-		{
-			payload.Error(message)
-		}
-		case Fatal:
-		{
-			payload.Fatal(message)
-		}
+		
+	case Warn:
+		payload.Warn(message)
+		
+	case Error:
+		payload.Error(message)
+		
+	case Fatal:
+		payload.Fatal(message)
 	}
 }

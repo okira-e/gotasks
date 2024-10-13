@@ -16,57 +16,46 @@ func ColorizeWidget(widget termui.Drawable, theme string) {
 
 	switch widget := widget.(type) {
 	case *widgets.Paragraph:
-		{
-			widget.TextStyle = color
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.TextStyle = color
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *widgets.List:
-		{
-			widget.TextStyle = color
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.TextStyle = color
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *widgets.Table:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
 
 	case *widgets.BarChart:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *widgets.Gauge:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *widgets.PieChart:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *widgets.SparklineGroup:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *termui.Block:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *termui.Canvas:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	case *termui.Grid:
-		{
-			widget.BorderStyle = color
-			widget.TitleStyle = color
-		}
+		widget.BorderStyle = color
+		widget.TitleStyle = color
+		
 	}
 }
