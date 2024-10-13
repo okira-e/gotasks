@@ -10,14 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var OpenConfig = &cobra.Command{
-	Use:   "config",
-	Short: "Opens the config file",
-	Long:  `Opens the config file for all projects in Vi.`,
+var OpenLogs = &cobra.Command{
+	Use:   "logs",
+	Short: "Opens the logs file",
+	Long:  `Opens the logs file for all projects in Vi.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		path, err := domain.GetConfigFilePathBasedOnOS()
+		path, err := domain.GetLogsFilePathBasedOnOS()
 		if err != nil {
-			log.Fatalln("Failed to open up the config. ", err)
+			log.Fatalln("Failed to open up the log file. ", err)
 		}
 		
 		editor := os.Getenv(vars.EditorOfChoice)

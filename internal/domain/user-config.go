@@ -401,6 +401,26 @@ func GetConfigFilePathBasedOnOS() (string, error) {
 	}
 }
 
+// GetLogsFilePathBasedOnOS returns the logs file path based on the OS.
+func GetLogsFilePathBasedOnOS() (string, error) {
+	logsDirPath, err := GetConfigDirPathBasedOnOS()
+	if err != nil {
+		return "", err
+	}
+	
+	if runtime.GOOS == "windows" {
+		return logsDirPath + "\\app.log", nil
+	} else if runtime.GOOS == "darwin" {
+		return logsDirPath + "/app.log", nil
+	} else if runtime.GOOS == "linux" {
+		return logsDirPath + "/app.log", nil
+	} else {
+		err := errors.New("unsupported OS")
+		return "", err
+	}
+}
+
+
 // doesConfigFileExists checks if the config file exists.
 func doesConfigFileExists() (bool, error) {
 	filePath, err := GetConfigFilePathBasedOnOS()

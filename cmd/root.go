@@ -73,6 +73,7 @@ between a to-do list and a Jira board that is accessible from the terminal.
 func Execute() {
 	rootCmd.AddCommand(ListAllBoards)
 	rootCmd.AddCommand(OpenConfig)
+	rootCmd.AddCommand(OpenLogs)
 	rootCmd.AddCommand(board.BoardCmd)
 	
 	board.BoardCmd.AddCommand(board.OpenBoardByName)
