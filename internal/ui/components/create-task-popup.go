@@ -178,6 +178,7 @@ func (self *CreateTaskPopup) Draw() {
 
 func (self *CreateTaskPopup) reset() {
 	self.focusedField = self.titleInput
+	self.EditingTask = nil
 	self.titleInput.Flush()
 	self.descInput.Flush()
 }
