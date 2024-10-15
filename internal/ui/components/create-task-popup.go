@@ -112,31 +112,14 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 		
 		self.Hide()
 		// Re-rendering already happens after this function call.
-	} else if event.ID == "<Backspace>" {
-		self.focusedField.PopChar()
-		
-	} else if event.ID == "<C-u>" {
-		self.focusedField.PopWord()
-		
-	} else if event.ID == "<Right>" {
-		self.focusedField.MoveCursorRight()
-		
-	} else if event.ID == "<C-e>" { // Ctrl + <Right>
-		self.focusedField.MoveCursorRightOneWord()
-		
-	} else if event.ID == "<C-a>" { // Ctrl + <Left>
-		self.focusedField.MoveCursorLeftOneWord()
-		
-	} else if event.ID == "<Left>" {
-		self.focusedField.MoveCursorLeft()
-		
-	} else if parsedString := utils.ParseEventId(event.ID); parsedString != "" {
+	} else {
 		// Disable new lines in the title.
-		if self.focusedField == self.titleInput && parsedString == "\n" {
-			return
+		disableNewLines := false
+		if self.focusedField == self.titleInput {
+			disableNewLines = true
 		}
-		
-		self.focusedField.AppendText(parsedString)
+
+		self.focusedField.HandleInput(event.ID, disableNewLines)
 	}
 }
 

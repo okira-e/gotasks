@@ -37,6 +37,7 @@ type App struct {
 	columnsHeadersView				*components.ColumnsHeaderComponent
 	tasksView						*components.TasksViewComponent
 	confirmationPopup				*components.ConfirmationComponent
+	searchDialogPopup				*components.SearchDialogPopupComponent
 }
 
 // NewApp creates a new instance of the App with initial configurations.
@@ -68,8 +69,9 @@ func NewApp(userConfig *domain.UserConfig, boardName string) (*App, error) {
 	app.theme = theme
 	app.createTaskPopup = components.NewCreateTaskPopupComponent(width, height, userConfig, boardName)
 	app.confirmationPopup = components.NewConfirmationPopupComponent(width, height)
-	app.columnsHeadersView = components.NewColumnsHeaderComponent(width, height, board.Columns)
 	app.tasksView = components.NewTasksViewComponent(width, height, board, userConfig)
+	app.searchDialogPopup = components.NewSearchDialogPopupComponent(width, height, app.tasksView.SetTextFilter)
+	app.columnsHeadersView = components.NewColumnsHeaderComponent(width, height, board.Columns)
 
 	return app, nil
 }

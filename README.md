@@ -38,6 +38,7 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 - `d`: Deletes a task with a confirmation toggle
 - `]`: Move task to the next column
 - `[`: Move task to the previous column
+- `s | /`: Opens a search popup where you can do fuzzy search on the whole board. Search for an empty string to reset the filter
 
 ## Contributing
 Pull requests are always welcomed and encouraged. Feel free to open an issue first to discuss what you would like to change.

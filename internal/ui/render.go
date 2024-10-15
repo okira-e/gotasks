@@ -17,11 +17,13 @@ func (app *App) render() {
 	app.tasksView.Draw()
 	
 	if app.createTaskPopup.Visible {
-		applyTheme(app.createTaskPopup, app.theme)
 		app.createTaskPopup.Draw()
-	}
-	
-	if app.confirmationPopup.Visible {
+
+	} else if app.confirmationPopup.Visible {
 		app.confirmationPopup.Draw()
+		
+	} else if app.searchDialogPopup.Visible {
+		app.searchDialogPopup.Draw()
+		
 	}
 }

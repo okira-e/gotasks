@@ -8,18 +8,21 @@ import (
 	"github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 	"github.com/okira-e/gotasks/internal/domain"
+	"github.com/okira-e/gotasks/internal/opt"
 	"github.com/okira-e/gotasks/internal/utils"
 )
 
 type TasksViewComponent struct {
+	// ID of the task that should be in focus.
+	TaskInFocus		*domain.Task
+	
 	// Represents a card on the board. Wherever it is.
 	tasksWidgets 	[]*widgets.Paragraph
 	width        	int
 	height       	int
 	board        	*domain.Board
 	userConfig      *domain.UserConfig
-	// ID of the task that should be in focus.
-	TaskInFocus		*domain.Task
+	filter 			opt.Option[string]
 	scroll			int
 }
 
@@ -44,15 +47,15 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 	}
 	
 	colName, _ := self.board.GetColumnForTask(self.TaskInFocus)
-	tasks := self.board.Tasks[colName]
+	tasks := self.getFilteredTasks(colName)
 	
 	// @Speed: Movement now is an O(n) operation on every key stroke because we use a simple dynamic array
 	// to store tasks for each column. A more sophesticated DS like a Linked List would benefit vertical 
 	// movemnet here for example. But n here is so small that it isn't worth it to waste a second optimizing this.
 	switch key {
 	case "j", "<Down>", "k", "<Up>":
-		if key == "j" || key == "<Down>" {
-			for i := len(tasks) - 1; i >= 0; i -= 1 {
+		if key == "k" || key == "<Up>" {
+			for i := range tasks {
 				if tasks[i].Id == self.TaskInFocus.Id {
 					if i - 1 >= 0 {
 						self.TaskInFocus = tasks[i - 1]
@@ -61,8 +64,8 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 					break
 				}
 			}
-		} else if key == "k" || key == "<Up>" {
-			for i := len(tasks) - 1; i >= 0; i -= 1 {
+		} else if key == "j" || key == "<Down>" {
+			for i := range tasks {
 				if tasks[i].Id == self.TaskInFocus.Id {
 					if i + 1 <= len(tasks) - 1 {
 						self.TaskInFocus = tasks[i + 1]
@@ -91,8 +94,9 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 			}
 			
 			nextColumnName := self.board.Columns[nextColumnIndex]
+			tasksInNextColumn := self.getFilteredTasks(nextColumnName)
 			
-			for len(self.board.Tasks[nextColumnName]) == 0 {
+			for len(tasksInNextColumn) == 0 {
 				nextColumnIndex += 1
 				
 				if nextColumnIndex > len(self.board.Columns) - 1 {
@@ -100,6 +104,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 				}
 				
 				nextColumnName = self.board.Columns[nextColumnIndex]
+				tasksInNextColumn = self.getFilteredTasks(nextColumnName)
 			}
 			
 			columnToMoveTo = nextColumnName
@@ -111,8 +116,9 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 			}
 			
 			prevColumnName := self.board.Columns[prevColumnIndex]
+			tasksInPrevColumn := self.getFilteredTasks(prevColumnName)
 			
-			for len(self.board.Tasks[prevColumnName]) == 0 {
+			for len(tasksInPrevColumn) == 0 {
 				prevColumnIndex -= 1
 				
 				if prevColumnIndex < 0 {
@@ -120,12 +126,15 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 				}
 				
 				prevColumnName = self.board.Columns[prevColumnIndex]
+				tasksInPrevColumn = self.getFilteredTasks(prevColumnName)
 			}
 			
 			columnToMoveTo = prevColumnName
 		}
 		
-		self.TaskInFocus = self.board.Tasks[columnToMoveTo][len(self.board.Tasks[columnToMoveTo]) - 1] // We set it to the last task not the first because we render the last one ontop.
+		tasksToMoveTo := self.getFilteredTasks(columnToMoveTo)
+		
+		self.TaskInFocus = tasksToMoveTo[0]
 
 	case "n":
 		// Scroll infinitely for now.
@@ -200,15 +209,44 @@ func (self *TasksViewComponent) SetDefaultFocusedWidget() {
 			continue
 		}
 		
-		// Set the first task found IN REVERSE to be the focused one.
-		// We do this in reverse because the task rows are rendered in reverse.
-		for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
-			task := self.board.Tasks[columnName][i]
+		tasks := self.getFilteredTasks(columnName)
+		
+		for _, task := range tasks {
 			self.TaskInFocus = task
 			found = true
 			break
 		}
 	}
+}
+
+// SetTextFilter applies a searching phase to the state.
+func (self *TasksViewComponent) SetTextFilter(filter string) {
+	self.filter = utils.Cond(filter == "", opt.None[string](), opt.Some(filter))
+	self.TaskInFocus = nil
+}
+
+// getFilteredTasks returns all the tasks for a column but in reverse.
+func (self *TasksViewComponent) getFilteredTasks(columnName string) []*domain.Task {
+	ret := []*domain.Task{}
+
+	for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
+		task := self.board.Tasks[columnName][i]
+		
+		// If a filter is porvided, make sure to only draw the tasks that match the searched for phrase
+		// by skipping the ones that don't.
+		if self.filter.IsSome() {
+			title := strings.ToLower(task.Title)
+			desc := strings.ToLower(task.Description)
+			
+			if !utils.IncludesFuzzy(title, self.filter.Unwrap()) && !utils.IncludesFuzzy(desc, self.filter.Unwrap()) {
+				continue
+			}
+		}
+		
+		ret = append(ret, task)
+	}
+		
+	return ret
 }
 
 func (self *TasksViewComponent) setFocusOnTopTask(columnName string) {
@@ -248,13 +286,11 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 	}
 	
 	for columnIndex, columnName := range self.board.Columns {
-		// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
 		differentWidgetsLengths := []int{}
-
-		// Make the paragraph widgets and append them but in reverse. So last task in self.board.Tasks["Todo"] is rendered ontop.
-		for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
-			task := self.board.Tasks[columnName][i]
-			
+		
+		tasks := self.getFilteredTasks(columnName)
+		
+		for _, task := range tasks {
 			widgetLength := 2 // Border lines.
 
 			widgetLength += int(math.Ceil(
@@ -324,6 +360,84 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 			ret = append(ret, widget)
 		}
 	}
+	
+	// for columnIndex, columnName := range self.board.Columns {
+	// 	// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
+	// 	differentWidgetsLengths := []int{}
+
+	// 	// Make the paragraph widgets and append them but in reverse. So last task in self.board.Tasks["Todo"] is rendered ontop.
+	// 	for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
+	// 		task := self.board.Tasks[columnName][i]
+			
+	// 		widgetLength := 2 // Border lines.
+
+	// 		widgetLength += int(math.Ceil(
+	// 			float64(len(task.Title)) / float64(widgetWidth-2),
+	// 		))
+
+	// 		if task.Description != "" {
+	// 			widgetLength += 1 // The separator line "-------" between the title and the description
+	// 			widgetLength += int(math.Ceil(
+	// 				float64(len(task.Description)) / float64(widgetWidth-2), // 2 here is for border lines
+	// 			))
+	// 		}
+
+	// 		// Set a minimum length size for every task.
+	// 		if widgetLength < 6 {
+	// 			widgetLength = 6
+	// 		}
+
+	// 		widget := widgets.NewParagraph()
+	// 		widget.Border = true
+			
+			
+	// 		// if task.Id == "74ac4c49-e5f6-4bb1-86a7-a050adb6295d" {
+	// 		if task == self.TaskInFocus{
+	// 			widget.BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
+	// 		}
+			
+	// 		widget.WrapText = true
+	// 		// widget.Text = TextEllipsis(ticket.Title, (widgetWidth - widthPadding))
+	// 		widget.Text = task.Title
+	// 		widget.Text += "\n"
+	// 		widget.Text += strings.Repeat("-", widgetWidth-widthPadding)
+	// 		widget.Text += "\n"
+
+	// 		if task.Description != "" {
+	// 			widget.Text += task.Description
+	// 		} else {
+	// 			// See how much the title has taken up. If it took only one line, add a new line to the description
+	// 			// because it looks better.
+	// 			if math.Ceil(
+	// 				float64(len(task.Title))/float64(widgetWidth),
+	// 			) == 1 {
+	// 				widget.Text += "\n"
+	// 			}
+
+	// 			widget.Text += utils.CenterText("No description found.", widgetWidth, true)
+	// 		}
+
+	// 		widget.PaddingLeft = 1
+	// 		widget.PaddingRight = 1
+
+	// 		x1 := columnIndex * widgetWidth
+	// 		x2 := x1 + widgetWidth
+
+	// 		sumOfPreviousWidgetsLengths := 0
+	// 		for _, length := range differentWidgetsLengths {
+	// 			sumOfPreviousWidgetsLengths += length
+	// 		}
+
+	// 		y1 := sumOfPreviousWidgetsLengths + 3 // 3 here is the y length of the header.
+	// 		y2 := y1 + widgetLength
+
+	// 		widget.SetRect(x1, y1, x2, y2)
+
+	// 		differentWidgetsLengths = append(differentWidgetsLengths, widgetLength)
+			
+	// 		ret = append(ret, widget)
+	// 	}
+	// }
 
 	return ret
 }
