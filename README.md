@@ -43,5 +43,58 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 ## Contributing
 Pull requests are always welcomed and encouraged. Feel free to open an issue first to discuss what you would like to change.
 
+## File Structure
+```
+.
+├── .gitignore
+├── LICENSE
+├── README.md
+├── assets
+│   └── preview_screenshot.png
+├── bin
+│   └── gotasks
+├── cmd
+│   ├── board
+│   │   ├── open-board-by-name.go
+│   │   └── root.go
+│   ├── list-all-boards.go
+│   ├── open-config.go
+│   ├── open-logs.go
+│   └── root.go
+├── go.mod
+├── go.sum
+├── internal
+│   ├── domain
+│   │   ├── task.go
+│   │   └── user-config.go
+│   ├── opt
+│   │   └── safego.go
+│   ├── ui
+│   │   ├── app.go
+│   │   ├── components
+│   │   │   ├── columns-headers.go
+│   │   │   ├── confirmation-popup.go
+│   │   │   ├── create-task-popup.go
+│   │   │   ├── search-dialog-popup.go
+│   │   │   └── tasks-view.go
+│   │   ├── custom-widgets
+│   │   │   └── text-input.go
+│   │   ├── events.go
+│   │   ├── render.go
+│   │   └── theming.go
+│   ├── utils
+│   │   ├── code-editing.go
+│   │   ├── common.go
+│   │   ├── keyboard-events.go
+│   │   ├── logging.go
+│   │   ├── process.go
+│   │   ├── rendering.go
+│   │   └── searching.go
+│   └── vars
+│       ├── colors.go
+│       └── env.go
+└── main.go
+```
+
 ## License
 This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/). See the [LICENSE](LICENSE) file for details.
