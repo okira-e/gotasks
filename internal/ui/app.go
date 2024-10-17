@@ -7,6 +7,7 @@ import (
 	"github.com/gizak/termui/v3"
 	"github.com/okira-e/gotasks/internal/domain"
 	"github.com/okira-e/gotasks/internal/ui/components"
+	"github.com/okira-e/gotasks/internal/ui/types"
 	"github.com/okira-e/gotasks/internal/vars"
 )
 
@@ -29,8 +30,7 @@ type Component interface {
 type App struct {
 	userConfig                  	*domain.UserConfig
 	boardName                   	string
-	width                       	int
-	height                      	int
+	window							types.Window
 	// theme could be "dark" or "light". Is set through an environment variable.
 	theme                       	string
 	createTaskPopup					*components.CreateTaskPopup
@@ -64,14 +64,16 @@ func NewApp(userConfig *domain.UserConfig, boardName string) (*App, error) {
 	
 	app.userConfig = userConfig
 	app.boardName = boardName
-	app.width = width
-	app.height = height
+	app.window = types.Window {
+		Width: width,
+		Height: height,
+	}
 	app.theme = theme
-	app.createTaskPopup = components.NewCreateTaskPopupComponent(width, height, userConfig, boardName)
-	app.confirmationPopup = components.NewConfirmationPopupComponent(width, height)
-	app.tasksView = components.NewTasksViewComponent(width, height, board, userConfig)
-	app.searchDialogPopup = components.NewSearchDialogPopupComponent(width, height, app.tasksView.SetTextFilter)
-	app.columnsHeadersView = components.NewColumnsHeaderComponent(width, height, board.Columns)
+	app.createTaskPopup = components.NewCreateTaskPopupComponent(&app.window, userConfig, boardName)
+	app.confirmationPopup = components.NewConfirmationPopupComponent(&app.window)
+	app.tasksView = components.NewTasksViewComponent(&app.window, board, userConfig)
+	app.searchDialogPopup = components.NewSearchDialogPopupComponent(&app.window, app.tasksView.SetTextFilter)
+	app.columnsHeadersView = components.NewColumnsHeaderComponent(&app.window, board.Columns)
 
 	return app, nil
 }

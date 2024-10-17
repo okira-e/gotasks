@@ -5,24 +5,23 @@ import (
 
 	"github.com/gizak/termui/v3"
 	cw "github.com/okira-e/gotasks/internal/ui/custom-widgets"
+	"github.com/okira-e/gotasks/internal/ui/types"
 )
 
 
 type SearchDialogPopupComponent struct {
 	Visible bool
 	
-	fullWidth 	int
-	fullHeight 	int
+	window		*types.Window
 	action 		func(string)
 	widget 		*cw.TextInput
 }
 
-func NewSearchDialogPopupComponent(fullWidth int, fullHeight int, action func(string)) *SearchDialogPopupComponent {
+func NewSearchDialogPopupComponent(window *types.Window, action func(string)) *SearchDialogPopupComponent {
 	ret := new(SearchDialogPopupComponent)
 	
-	ret.fullWidth 	= fullWidth
-	ret.fullHeight 	= fullHeight
-	ret.action 		= action
+	ret.window = window
+	ret.action = action
 	
 	ret.drawWidget()
 	
@@ -37,11 +36,11 @@ func (self *SearchDialogPopupComponent) drawWidget() {
 	const widgetWidth = 60 // Just an arbitrary number.
 	
 	self.widget.GetDrawableWidget().SetRect(
-		self.fullWidth / 2 - widgetWidth / 2,
-		self.fullHeight / 2 - 1,
+		self.window.Width / 2 - widgetWidth / 2,
+		self.window.Height / 2 - 1,
 		
-		self.fullWidth / 2 + widgetWidth / 2,
-		self.fullHeight / 2 + 2,
+		self.window.Width / 2 + widgetWidth / 2,
+		self.window.Height / 2 + 2,
 	)
 	
 	self.widget.GetDrawableWidget().Border = true

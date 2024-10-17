@@ -10,14 +10,14 @@ import (
 func (app *App) handleEvent(event termui.Event) {
 
 	if event.Type == termui.ResizeEvent {
-		app.render()
-	}
-
-	if event.Type == termui.KeyboardEvent {
-		app.width, app.height = termui.TerminalDimensions()
-			
+		termui.Clear()
+		app.window.Width, app.window.Height = termui.TerminalDimensions()
+		
+	} else if event.Type == termui.KeyboardEvent {
 		app.handleKeymap(event)
 	}
+	
+	app.render()
 }
 
 // handleKeymap handles every keystroke given. One of the things it handles
@@ -80,7 +80,5 @@ func (app *App) handleKeymap(event termui.Event) {
 		}
 	
 	}
-	
-	app.render()
 }
 

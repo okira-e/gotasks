@@ -3,6 +3,7 @@ package components
 import (
 	"github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+	"github.com/okira-e/gotasks/internal/ui/types"
 	"github.com/okira-e/gotasks/internal/utils"
 )
 
@@ -11,19 +12,16 @@ type ConfirmationComponent struct {
 	Visible bool
 	Action 	func(bool)
 	
-	fullWidth int
-	fullHeight int
-	widget *widgets.Paragraph
+	window	*types.Window
+	widget 	*widgets.Paragraph
 }
 
-func NewConfirmationPopupComponent(fullWidth int, fullHeight int) *ConfirmationComponent {
+func NewConfirmationPopupComponent(window *types.Window) *ConfirmationComponent {
 	ret := new(ConfirmationComponent)
 	
 	ret.widget = widgets.NewParagraph()
 	ret.widget.Title = "Confirmation"
-	
-	ret.fullWidth = fullWidth
-	ret.fullHeight = fullHeight
+	ret.window = window
 	
 	return ret
 }
@@ -33,11 +31,11 @@ func (self *ConfirmationComponent) SetMessageAndAction(message string, action fu
 	widgetWidth := len(message) + 4
 	
 	self.widget.SetRect(
-		self.fullWidth / 2 - widgetWidth / 2,
-		self.fullHeight / 2 - widgetHeight / 2,
+		self.window.Width / 2 - widgetWidth / 2,
+		self.window.Height / 2 - widgetHeight / 2,
 		
-		self.fullWidth / 2 + widgetWidth / 2,
-		self.fullHeight / 2 + widgetHeight / 2,
+		self.window.Width / 2 + widgetWidth / 2,
+		self.window.Height / 2 + widgetHeight / 2,
 	)
 	
 	self.widget.Text = utils.CenterText(message, widgetWidth, true)

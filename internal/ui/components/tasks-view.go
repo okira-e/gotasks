@@ -9,6 +9,7 @@ import (
 	"github.com/gizak/termui/v3/widgets"
 	"github.com/okira-e/gotasks/internal/domain"
 	"github.com/okira-e/gotasks/internal/opt"
+	"github.com/okira-e/gotasks/internal/ui/types"
 	"github.com/okira-e/gotasks/internal/utils"
 )
 
@@ -18,19 +19,17 @@ type TasksViewComponent struct {
 	
 	// Represents a card on the board. Wherever it is.
 	tasksWidgets 	[]*widgets.Paragraph
-	width        	int
-	height       	int
+	window			*types.Window
 	board        	*domain.Board
 	userConfig      *domain.UserConfig
 	filter 			opt.Option[string]
 	scroll			int
 }
 
-func NewTasksViewComponent(fullWidth int, fullHeight int, board *domain.Board, userConfig *domain.UserConfig) *TasksViewComponent {
+func NewTasksViewComponent(window *types.Window, board *domain.Board, userConfig *domain.UserConfig) *TasksViewComponent {
 	ret := new(TasksViewComponent)
 	
-	ret.width = fullWidth
-	ret.height = fullHeight
+	ret.window = window
 	ret.board = board
 	ret.userConfig = userConfig
 	ret.tasksWidgets = []*widgets.Paragraph{}
@@ -278,7 +277,7 @@ func (self *TasksViewComponent) setFocusOnBottonTask(columnName string) {
 func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 	ret := []*widgets.Paragraph{}
 	
-	widgetWidth := self.width / len(self.board.Columns)
+	widgetWidth := self.window.Width / len(self.board.Columns)
 	const widthPadding = 4
 
 	if self.TaskInFocus == nil {

@@ -3,6 +3,7 @@ package components
 import (
 	"github.com/gizak/termui/v3"
 	"github.com/okira-e/gotasks/internal/domain"
+	"github.com/okira-e/gotasks/internal/ui/types"
 	cw "github.com/okira-e/gotasks/internal/ui/custom-widgets"
 	"github.com/okira-e/gotasks/internal/utils"
 )
@@ -12,6 +13,7 @@ type CreateTaskPopup struct {
 	// EditingTask if this is set, the widget becomes an edit popup that shows & edits existing data.
 	EditingTask		*domain.Task
 	
+	window			*types.Window
 	titleInput   	*cw.TextInput
 	descInput    	*cw.TextInput
 	focusedField 	*cw.TextInput
@@ -20,36 +22,20 @@ type CreateTaskPopup struct {
 }
 
 // NewCreateTaskPopupComponent initializes a new popup.
-func NewCreateTaskPopupComponent(fullWidth int, fullHeight int, config *domain.UserConfig, boardName string) *CreateTaskPopup {
+func NewCreateTaskPopupComponent(window *types.Window, config *domain.UserConfig, boardName string) *CreateTaskPopup {
 	component := new(CreateTaskPopup)
 	
 	component.Visible = false
+	component.window = window
 	component.titleInput = cw.NewTextInput()
 	component.descInput = cw.NewTextInput()
 	component.userConfig = config
 	component.boardName = boardName
 
-	y1 := fullHeight/4
-
-	component.titleInput.GetDrawableWidget().Title = "Title"
-	component.titleInput.GetDrawableWidget().SetRect(
-		fullWidth/4,
-		fullHeight/4,
-
-		fullWidth/4*3,
-		y1+3,
-	)
-
 	component.focusedField = component.titleInput
-
+	component.titleInput.GetDrawableWidget().Title = "Title"
 	component.descInput.GetDrawableWidget().Title = "Description"
-	component.descInput.GetDrawableWidget().SetRect(
-		fullWidth/4,
-		component.titleInput.GetDrawableWidget().Max.Y, // 3 is the height of the Title widget above it.
-		fullWidth/4*3,
-		fullHeight/4*3,
-	)
-
+	
 	return component
 }
 
@@ -149,6 +135,22 @@ func (self *CreateTaskPopup) ToggleFocusOnNextField() {
 func (self *CreateTaskPopup) Draw() {
 	self.Visible = true
 	
+	y1 := self.window.Height/4
+
+	self.titleInput.GetDrawableWidget().SetRect(
+		self.window.Width/4,
+		self.window.Height/4,
+
+		self.window.Width/4*3,
+		y1+3,
+	)
+
+	self.descInput.GetDrawableWidget().SetRect(
+		self.window.Width/4,
+		self.titleInput.GetDrawableWidget().Max.Y, // 3 is the height of the Title widget above it.
+		self.window.Width/4*3,
+		self.window.Height/4*3,
+	)
 	// Set the border to be blue on the input field that is in focus.
 	if self.focusedField != nil {
 		self.focusedField.GetDrawableWidget().BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
