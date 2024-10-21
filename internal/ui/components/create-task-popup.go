@@ -3,8 +3,8 @@ package components
 import (
 	"github.com/gizak/termui/v3"
 	"github.com/okira-e/gotasks/internal/domain"
-	"github.com/okira-e/gotasks/internal/ui/types"
 	cw "github.com/okira-e/gotasks/internal/ui/custom-widgets"
+	"github.com/okira-e/gotasks/internal/ui/types"
 	"github.com/okira-e/gotasks/internal/utils"
 )
 
@@ -27,14 +27,12 @@ func NewCreateTaskPopupComponent(window *types.Window, config *domain.UserConfig
 	
 	component.Visible = false
 	component.window = window
-	component.titleInput = cw.NewTextInput()
-	component.descInput = cw.NewTextInput()
 	component.userConfig = config
 	component.boardName = boardName
+	component.titleInput = cw.NewTextInput()
+	component.descInput = cw.NewTextInput()
 
 	component.focusedField = component.titleInput
-	component.titleInput.GetDrawableWidget().Title = "Title"
-	component.descInput.GetDrawableWidget().Title = "Description"
 	
 	return component
 }
@@ -53,14 +51,19 @@ func (self *CreateTaskPopup) GetAllDrawableWidgets() []termui.Drawable {
 	}
 }
 
-func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
+// HandleKeyboardEvent handles every event for this widget. It returns a flag
+// indicating if the next render should clear the view.
+func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) bool {
 	if event.ID ==  "<Escape>" {
 		self.Hide()
+		return true
+		
 	} else if event.ID == "<Tab>" {
 		self.ToggleFocusOnNextField()
+		
 	} else if event.ID == "<Enter>" {
 		if self.titleInput.GetText() == "" {
-			return
+			return false
 		}
 		
 		// Save the task.
@@ -73,7 +76,8 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 				"Board has no columns. Cannot create a task without a column.",
 				nil,
 			)
-			return
+			
+			return false
 		}
 		
 		// If we are not in edit mode, create a new task. Otherwise, just simple edit the pointer
@@ -97,7 +101,8 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 		}
 		
 		self.Hide()
-		// Re-rendering already happens after this function call.
+		return true
+		
 	} else {
 		// Disable new lines in the title.
 		disableNewLines := false
@@ -107,6 +112,8 @@ func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) {
 
 		self.focusedField.HandleInput(event.ID, disableNewLines)
 	}
+	
+	return false
 }
 
 func (self *CreateTaskPopup) Show() {
@@ -137,6 +144,8 @@ func (self *CreateTaskPopup) Draw() {
 	
 	y1 := self.window.Height/4
 
+	self.titleInput.GetDrawableWidget().Title = "Title"
+	
 	self.titleInput.GetDrawableWidget().SetRect(
 		self.window.Width/4,
 		self.window.Height/4,
@@ -145,15 +154,21 @@ func (self *CreateTaskPopup) Draw() {
 		y1+3,
 	)
 
+	self.descInput.GetDrawableWidget().Title = "Description"
 	self.descInput.GetDrawableWidget().SetRect(
 		self.window.Width/4,
 		self.titleInput.GetDrawableWidget().Max.Y, // 3 is the height of the Title widget above it.
 		self.window.Width/4*3,
 		self.window.Height/4*3,
 	)
-	// Set the border to be blue on the input field that is in focus.
-	if self.focusedField != nil {
-		self.focusedField.GetDrawableWidget().BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
+	
+	// Set the border to be the primary color on the input field that is in focus.
+	self.focusedField.GetDrawableWidget().BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
+	// Remove the primary color from the non-focused
+	if self.focusedField == self.titleInput {
+		self.descInput.GetDrawableWidget().BorderStyle = termui.NewStyle(termui.ColorClear)
+	} else {
+		self.titleInput.GetDrawableWidget().BorderStyle = termui.NewStyle(termui.ColorClear)
 	}
 	
 	termui.Render(

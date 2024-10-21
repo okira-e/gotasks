@@ -40,7 +40,10 @@ func NewTasksViewComponent(window *types.Window, board *domain.Board, userConfig
 }
 
 // HandleKeymap changes the reference in self.taskInFocus
-func (self *TasksViewComponent) HandleKeymap(key string) {
+// Returns a flag saying if the renderer should clear the old view.
+func (self *TasksViewComponent) HandleKeymap(key string) bool {
+	shouldClear := false
+	
 	if self.TaskInFocus == nil {
 		self.SetDefaultFocusedWidget()
 	}
@@ -77,7 +80,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 		
 	case "h", "<Left>", "l", "<Right>":
 		if len(self.board.Columns) == 0 {
-			return
+			return shouldClear
 		}
 		
 		self.scroll = 0 // Reset the scroll to be ontop
@@ -89,7 +92,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 			nextColumnIndex := columnIndexForTask + 1
 			
 			if nextColumnIndex >= len(self.board.Columns) {
-				return
+				return shouldClear
 			}
 			
 			nextColumnName := self.board.Columns[nextColumnIndex]
@@ -99,7 +102,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 				nextColumnIndex += 1
 				
 				if nextColumnIndex > len(self.board.Columns) - 1 {
-					return
+					return shouldClear
 				}
 				
 				nextColumnName = self.board.Columns[nextColumnIndex]
@@ -111,7 +114,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 			prevColumnIndex := columnIndexForTask - 1
 			
 			if prevColumnIndex < 0 {
-				return
+				return shouldClear
 			}
 			
 			prevColumnName := self.board.Columns[prevColumnIndex]
@@ -121,7 +124,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 				prevColumnIndex -= 1
 				
 				if prevColumnIndex < 0 {
-					return
+					return shouldClear
 				}
 				
 				prevColumnName = self.board.Columns[prevColumnIndex]
@@ -139,6 +142,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 		// Scroll infinitely for now.
 		self.scroll += 1
 		self.SetDefaultFocusedWidget()
+		shouldClear = true
 		
 	case "p":
 		newScroll := self.scroll - 1
@@ -146,6 +150,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 		if newScroll >= 0 {
 			self.scroll = newScroll
 		}
+		shouldClear = true
 		
 	case "g":
 		column, i := self.board.GetColumnForTask(self.TaskInFocus)
@@ -155,6 +160,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 		
 		self.scroll = 0
 		self.setFocusOnTopTask(column)
+		shouldClear = true
 		
 	case "G":
 		column, i := self.board.GetColumnForTask(self.TaskInFocus)
@@ -163,6 +169,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 		}
 		
 		self.setFocusOnBottonTask(column)
+		shouldClear = true
 		
 	case "]":
 		err := self.userConfig.MoveTaskRight(self.board, self.TaskInFocus)
@@ -175,6 +182,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 				},
 			)
 		}
+		shouldClear = true
 		
 	case "[":
 		err := self.userConfig.MoveTaskLeft(self.board, self.TaskInFocus)
@@ -187,9 +195,13 @@ func (self *TasksViewComponent) HandleKeymap(key string) {
 				},
 			)
 		}
+		shouldClear = true
+		
 	}
 	
 	self.UpdateTasks()
+	
+	return shouldClear
 }
 
 func (self *TasksViewComponent) UpdateTasks() {
@@ -311,8 +323,6 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 			widget := widgets.NewParagraph()
 			widget.Border = true
 			
-			
-			// if task.Id == "74ac4c49-e5f6-4bb1-86a7-a050adb6295d" {
 			if task == self.TaskInFocus{
 				widget.BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
 			}
@@ -360,84 +370,6 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 		}
 	}
 	
-	// for columnIndex, columnName := range self.board.Columns {
-	// 	// We sum them up instead of doing `rowIndex * widgetLength` because each widget has a different length.
-	// 	differentWidgetsLengths := []int{}
-
-	// 	// Make the paragraph widgets and append them but in reverse. So last task in self.board.Tasks["Todo"] is rendered ontop.
-	// 	for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
-	// 		task := self.board.Tasks[columnName][i]
-			
-	// 		widgetLength := 2 // Border lines.
-
-	// 		widgetLength += int(math.Ceil(
-	// 			float64(len(task.Title)) / float64(widgetWidth-2),
-	// 		))
-
-	// 		if task.Description != "" {
-	// 			widgetLength += 1 // The separator line "-------" between the title and the description
-	// 			widgetLength += int(math.Ceil(
-	// 				float64(len(task.Description)) / float64(widgetWidth-2), // 2 here is for border lines
-	// 			))
-	// 		}
-
-	// 		// Set a minimum length size for every task.
-	// 		if widgetLength < 6 {
-	// 			widgetLength = 6
-	// 		}
-
-	// 		widget := widgets.NewParagraph()
-	// 		widget.Border = true
-			
-			
-	// 		// if task.Id == "74ac4c49-e5f6-4bb1-86a7-a050adb6295d" {
-	// 		if task == self.TaskInFocus{
-	// 			widget.BorderStyle = termui.NewStyle(self.userConfig.PrimaryColor)
-	// 		}
-			
-	// 		widget.WrapText = true
-	// 		// widget.Text = TextEllipsis(ticket.Title, (widgetWidth - widthPadding))
-	// 		widget.Text = task.Title
-	// 		widget.Text += "\n"
-	// 		widget.Text += strings.Repeat("-", widgetWidth-widthPadding)
-	// 		widget.Text += "\n"
-
-	// 		if task.Description != "" {
-	// 			widget.Text += task.Description
-	// 		} else {
-	// 			// See how much the title has taken up. If it took only one line, add a new line to the description
-	// 			// because it looks better.
-	// 			if math.Ceil(
-	// 				float64(len(task.Title))/float64(widgetWidth),
-	// 			) == 1 {
-	// 				widget.Text += "\n"
-	// 			}
-
-	// 			widget.Text += utils.CenterText("No description found.", widgetWidth, true)
-	// 		}
-
-	// 		widget.PaddingLeft = 1
-	// 		widget.PaddingRight = 1
-
-	// 		x1 := columnIndex * widgetWidth
-	// 		x2 := x1 + widgetWidth
-
-	// 		sumOfPreviousWidgetsLengths := 0
-	// 		for _, length := range differentWidgetsLengths {
-	// 			sumOfPreviousWidgetsLengths += length
-	// 		}
-
-	// 		y1 := sumOfPreviousWidgetsLengths + 3 // 3 here is the y length of the header.
-	// 		y2 := y1 + widgetLength
-
-	// 		widget.SetRect(x1, y1, x2, y2)
-
-	// 		differentWidgetsLengths = append(differentWidgetsLengths, widgetLength)
-			
-	// 		ret = append(ret, widget)
-	// 	}
-	// }
-
 	return ret
 }
 

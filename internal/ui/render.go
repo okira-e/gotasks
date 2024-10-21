@@ -1,13 +1,14 @@
 package ui
 
-import (
-	"github.com/gizak/termui/v3"
-)
+import "github.com/gizak/termui/v3"
 
-// render handles the full re-render of the app based on the current state.
-func (app *App) render() {
-	termui.Clear()
-
+// render handles rendering all widgets of the app. Takes in a flag.
+// indicating if it should re-render everything by clearing first.
+func (app *App) render(shouldClear bool) {
+	if shouldClear {
+		termui.Clear()
+	}
+	
 	app.columnsHeadersView.Draw()
 	
 	app.tasksView.Draw()

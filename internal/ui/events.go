@@ -8,31 +8,35 @@ import (
 
 // handleEvent processes user input and other events.
 func (app *App) handleEvent(event termui.Event) {
-
+	shouldClear := false
+	
 	if event.Type == termui.ResizeEvent {
-		termui.Clear()
 		app.window.Width, app.window.Height = termui.TerminalDimensions()
+		shouldClear = true
 		
 	} else if event.Type == termui.KeyboardEvent {
-		app.handleKeymap(event)
+		shouldClear = app.handleKeymap(event)
 	}
 	
-	app.render()
+	app.render(shouldClear)
 }
 
 // handleKeymap handles every keystroke given. One of the things it handles
 // is, if a text input widget is in focus, it sends the characters to it instead
 // of handling the global keymap as an example. So 'q' could conditionaly write "q"
 // on a widget or it could exit the app.
-func (app *App) handleKeymap(event termui.Event) {
+// It returns a flag indicating if we should clear before the next render.
+func (app *App) handleKeymap(event termui.Event) bool {
+	shouldClear := false
+
 	if app.createTaskPopup.Visible {
-		app.createTaskPopup.HandleKeyboardEvent(event)
+		shouldClear = app.createTaskPopup.HandleKeyboardEvent(event)
 		
 	} else if app.confirmationPopup.Visible {
-		app.confirmationPopup.HandleInput(event)
+		shouldClear = app.confirmationPopup.HandleInput(event)
 		
 	} else if app.searchDialogPopup.Visible {
-		app.searchDialogPopup.HandleInput(event)
+		shouldClear = app.searchDialogPopup.HandleInput(event)
 		
 	} else { // Default view is the tasks-view (the board itself)
 		switch event.ID {
@@ -75,10 +79,11 @@ func (app *App) handleKeymap(event termui.Event) {
 			}
 			
 		default: // Handles the movements/action in the board view itself
-			app.tasksView.HandleKeymap(event.ID)
+			shouldClear = app.tasksView.HandleKeymap(event.ID)
 			
 		}
-	
 	}
+
+	return shouldClear
 }
 

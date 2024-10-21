@@ -47,8 +47,8 @@ func (self *ConfirmationComponent) SetMessageAndAction(message string, action fu
 }
 
 // HandleInput handles keyboard inputs sent to this component. It returns a boolean
-// to close it.
-func (self *ConfirmationComponent) HandleInput(event termui.Event) {
+// indicating if we should clear before we re-render.
+func (self *ConfirmationComponent) HandleInput(event termui.Event) bool {
 	switch event.ID {
 	case "y", "Y": // Confirm
 		self.Action(true)
@@ -57,6 +57,7 @@ func (self *ConfirmationComponent) HandleInput(event termui.Event) {
 	}
 	
 	self.Hide()
+	return true
 }
 
 func (self *ConfirmationComponent) Hide() {

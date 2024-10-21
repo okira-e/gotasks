@@ -82,7 +82,7 @@ func NewApp(userConfig *domain.UserConfig, boardName string) (*App, error) {
 func (app *App) Run() {
 	defer termui.Close()
 
-	app.render()
+	app.render(false)
 
 	for event := range termui.PollEvents() {
 		app.handleEvent(event)

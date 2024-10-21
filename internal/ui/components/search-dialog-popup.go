@@ -46,9 +46,12 @@ func (self *SearchDialogPopupComponent) drawWidget() {
 	self.widget.GetDrawableWidget().Border = true
 }
 
-func (self *SearchDialogPopupComponent) HandleInput(event termui.Event) {
+// HandleInput handles every event for this widget. It returns a flag
+// indicating if the next render should clear the view.
+func (self *SearchDialogPopupComponent) HandleInput(event termui.Event) bool {
 	if event.ID ==  "<Escape>" {
 		self.Hide()
+		return true
 
 	} else if event.ID == "<Enter>" {
 		toSearchFor := self.widget.GetText()
@@ -57,9 +60,12 @@ func (self *SearchDialogPopupComponent) HandleInput(event termui.Event) {
 		self.action(toSearchFor)
 		
 		self.Hide()
+		return true
 	} else {
 		self.widget.HandleInput(event.ID, true)
 	}
+	
+	return false
 }
 
 func (self *SearchDialogPopupComponent) Hide() {
