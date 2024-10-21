@@ -51,8 +51,7 @@ Pull requests are always welcomed and encouraged. Feel free to open an issue fir
 ├── README.md
 ├── assets
 │   └── preview_screenshot.png
-├── bin
-│   └── gotasks
+├── build.sh
 ├── cmd
 │   ├── board
 │   │   ├── open-board-by-name.go
@@ -60,7 +59,8 @@ Pull requests are always welcomed and encouraged. Feel free to open an issue fir
 │   ├── list-all-boards.go
 │   ├── open-config.go
 │   ├── open-logs.go
-│   └── root.go
+│   ├── root.go
+│   └── version.go
 ├── go.mod
 ├── go.sum
 ├── internal
@@ -81,7 +81,9 @@ Pull requests are always welcomed and encouraged. Feel free to open an issue fir
 │   │   │   └── text-input.go
 │   │   ├── events.go
 │   │   ├── render.go
-│   │   └── theming.go
+│   │   ├── theming.go
+│   │   └── types
+│   │       └── ui.go
 │   ├── utils
 │   │   ├── code-editing.go
 │   │   ├── common.go
