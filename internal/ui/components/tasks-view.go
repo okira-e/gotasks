@@ -209,6 +209,11 @@ func (self *TasksViewComponent) UpdateTasks() {
 }
 
 func (self *TasksViewComponent) SetDefaultFocusedWidget() {
+	if self.board.IsEmpty() {
+		self.TaskInFocus = nil
+		return
+	}
+	
 	// Set the task in focus to be the first task you encounter (doesn't necessarily mean the first column.)
 	found := false
 	for _, columnName := range self.board.Columns {

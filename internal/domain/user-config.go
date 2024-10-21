@@ -363,6 +363,16 @@ func (board *Board) GetColumnForTask(task *Task) (string, int) {
 	return "", -1
 }
 
+func (board *Board) IsEmpty() bool {
+	for _, column := range board.Columns {
+		if len(board.Tasks[column]) != 0 {
+			return false
+		}
+	}
+	
+	return true
+}
+
 // GetConfigFilePathBasedOnOS returns the config folder path based on the OS.
 func GetConfigDirPathBasedOnOS() (string, error) {
 	var osUserName string
