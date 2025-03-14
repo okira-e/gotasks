@@ -53,7 +53,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 	
 	// @Speed: Movement now is an O(n) operation on every key stroke because we use a simple dynamic array
 	// to store tasks for each column. A more sophesticated DS like a Linked List would benefit vertical 
-	// movemnet here for example. But n here is so small that it isn't worth it to waste a second optimizing this.
+	// movement here for example. But n here is so small that it isn't worth it to waste a second optimizing this.
 	switch key {
 	case "j", "<Down>", "k", "<Up>":
 		if key == "k" || key == "<Up>" {
@@ -168,7 +168,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 			log.Fatalf("Failed to find the column for task on scrolling to bottom.")
 		}
 		
-		self.setFocusOnBottonTask(column)
+		self.setFocusOnBottomTask(column)
 		shouldClear = true
 		
 	case "]":
@@ -248,7 +248,7 @@ func (self *TasksViewComponent) getFilteredTasks(columnName string) []*domain.Ta
 	for i := (len(self.board.Tasks[columnName]) - 1 - self.scroll); i >= 0; i -= 1 {
 		task := self.board.Tasks[columnName][i]
 		
-		// If a filter is porvided, make sure to only draw the tasks that match the searched for phrase
+		// If a filter is provided, make sure to only draw the tasks that match the searched for phrase
 		// by skipping the ones that don't.
 		if self.filter.IsSome() {
 			title := strings.ToLower(task.Title)
@@ -279,7 +279,7 @@ func (self *TasksViewComponent) setFocusOnTopTask(columnName string) {
 	self.TaskInFocus = self.board.Tasks[columnName][len - 1]
 }
 
-func (self *TasksViewComponent) setFocusOnBottonTask(columnName string) {
+func (self *TasksViewComponent) setFocusOnBottomTask(columnName string) {
 	if _, ok := self.board.Tasks[columnName]; !ok {
 		return
 	}

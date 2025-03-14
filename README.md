@@ -10,8 +10,6 @@ Binaries are provided in the Releases section. If your target computer isn't cov
 ## Usage
 Just run `gotasks` in the directory of the project. The first time you open the program, the directory you are in saves a board at its location. On next times, opening `gotasks` in the same directory or any sub directory under it will open the same board for it.
 
-While everything is documented in this README, you can do `?` anywhere while running GoTasks and you will see a help popup for every command and its key.
-
 You can also run `gotasks help` to list all the commands
 
 ## Configuring the Board
@@ -43,60 +41,6 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 ## Contributing
 Pull requests are always welcomed and encouraged. Feel free to open an issue first to discuss what you would like to change.
 
-## File Structure
-```
-.
-├── .gitignore
-├── LICENSE
-├── README.md
-├── assets
-│   └── preview_screenshot.png
-├── build.sh
-├── cmd
-│   ├── board
-│   │   ├── open-board-by-name.go
-│   │   └── root.go
-│   ├── list-all-boards.go
-│   ├── open-config.go
-│   ├── open-logs.go
-│   ├── root.go
-│   └── version.go
-├── go.mod
-├── go.sum
-├── internal
-│   ├── domain
-│   │   ├── task.go
-│   │   └── user-config.go
-│   ├── opt
-│   │   └── safego.go
-│   ├── ui
-│   │   ├── app.go
-│   │   ├── components
-│   │   │   ├── columns-headers.go
-│   │   │   ├── confirmation-popup.go
-│   │   │   ├── create-task-popup.go
-│   │   │   ├── search-dialog-popup.go
-│   │   │   └── tasks-view.go
-│   │   ├── custom-widgets
-│   │   │   └── text-input.go
-│   │   ├── events.go
-│   │   ├── render.go
-│   │   ├── theming.go
-│   │   └── types
-│   │       └── ui.go
-│   ├── utils
-│   │   ├── code-editing.go
-│   │   ├── common.go
-│   │   ├── keyboard-events.go
-│   │   ├── logging.go
-│   │   ├── process.go
-│   │   ├── rendering.go
-│   │   └── searching.go
-│   └── vars
-│       ├── colors.go
-│       └── env.go
-└── main.go
-```
 
 ## License
 This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/). See the [LICENSE](LICENSE) file for details.

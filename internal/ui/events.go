@@ -23,7 +23,7 @@ func (app *App) handleEvent(event termui.Event) {
 
 // handleKeymap handles every keystroke given. One of the things it handles
 // is, if a text input widget is in focus, it sends the characters to it instead
-// of handling the global keymap as an example. So 'q' could conditionaly write "q"
+// of handling the global keymap as an example. So 'q' could conditionally write "q"
 // on a widget or it could exit the app.
 // It returns a flag indicating if we should clear before the next render.
 func (app *App) handleKeymap(event termui.Event) bool {
