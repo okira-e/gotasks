@@ -15,15 +15,20 @@ import (
 
 type TasksViewComponent struct {
 	// ID of the task that should be in focus.
-	TaskInFocus		*domain.Task
-	
+	TaskInFocus *domain.Task
+
 	// Represents a card on the board. Wherever it is.
-	tasksWidgets 	[]*widgets.Paragraph
-	window			*types.Window
-	board        	*domain.Board
-	userConfig      *domain.UserConfig
-	filter 			opt.Option[string]
-	scroll			int
+	tasksWidgets          []*widgets.Paragraph
+	window                *types.Window
+	board                 *domain.Board
+	userConfig            *domain.UserConfig
+	filter                opt.Option[string]
+	scroll                int
+	// goToFirstTaskInColumn Tells the draw function to set the 
+	// the task in focus to be the pointer to the first task
+	// in the column list that is set.
+	// Its value is the name of a column.
+	goToFirstTaskInColumn opt.Option[string]
 }
 
 func NewTasksViewComponent(window *types.Window, board *domain.Board, userConfig *domain.UserConfig) *TasksViewComponent {
@@ -53,13 +58,18 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 	
 	// @Speed: Movement now is an O(n) operation on every key stroke because we use a simple dynamic array
 	// to store tasks for each column. A more sophesticated DS like a Linked List would benefit vertical 
-	// movement here for example. But n here is so small that it isn't worth it to waste a second optimizing this.
+	// movement here for example.
 	switch key {
 	case "j", "<Down>", "k", "<Up>":
 		if key == "k" || key == "<Up>" {
 			for i := range tasks {
 				if tasks[i].Id == self.TaskInFocus.Id {
-					if i - 1 >= 0 {
+					// Scroll up one task if you're on a the first task in the view but not in the list.
+					if i == 0 && self.scroll > 0 {
+						self.scroll -= 1
+						
+						self.goToFirstTaskInColumn = opt.Some(colName)
+					} else if i - 1 >= 0 { // If we're not the first task in the list.
 						self.TaskInFocus = tasks[i - 1]
 					}
 					
@@ -69,7 +79,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 		} else if key == "j" || key == "<Down>" {
 			for i := range tasks {
 				if tasks[i].Id == self.TaskInFocus.Id {
-					if i + 1 <= len(tasks) - 1 {
+					if i + 1 <= len(tasks) - 1 { // We're not the last task in the list.
 						self.TaskInFocus = tasks[i + 1]
 					}
 					
@@ -139,9 +149,18 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 		self.TaskInFocus = tasksToMoveTo[0]
 
 	case "n":
-		// Scroll infinitely for now.
+		// @Todo: This scrolls infinitely for now.
 		self.scroll += 1
-		self.SetDefaultFocusedWidget()
+		
+		// Move the task in focus to the first of its list if scrolled beyond it
+		for i := range tasks {
+			if tasks[i] == self.TaskInFocus {
+				if self.scroll > i {
+					self.goToFirstTaskInColumn = opt.Some(colName)
+				}
+			}
+		}
+		
 		shouldClear = true
 		
 	case "p":
@@ -150,25 +169,28 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 		if newScroll >= 0 {
 			self.scroll = newScroll
 		}
+
 		shouldClear = true
 		
 	case "g":
-		column, i := self.board.GetColumnForTask(self.TaskInFocus)
+		columnName, i := self.board.GetColumnForTask(self.TaskInFocus)
 		if i == -1 {
-			log.Fatalf("Failed to find the column for task on scrolling to top.")
+			log.Fatalf("Failed to find the columnName for task on scrolling to top.")
 		}
 		
+		self.setFocusOnTopTask(columnName)
 		self.scroll = 0
-		self.setFocusOnTopTask(column)
 		shouldClear = true
 		
 	case "G":
-		column, i := self.board.GetColumnForTask(self.TaskInFocus)
+		columnName, i := self.board.GetColumnForTask(self.TaskInFocus)
 		if i == -1 {
-			log.Fatalf("Failed to find the column for task on scrolling to bottom.")
+			log.Fatalf("Failed to find the columnName for task on scrolling to bottom.")
 		}
 		
-		self.setFocusOnBottomTask(column)
+		self.setFocusOnBottomTask(columnName)
+		self.scroll = len(self.board.Tasks[columnName]) - 1
+			
 		shouldClear = true
 		
 	case "]":
@@ -241,7 +263,10 @@ func (self *TasksViewComponent) SetTextFilter(filter string) {
 	self.TaskInFocus = nil
 }
 
-// getFilteredTasks returns all the tasks for a column but in reverse.
+// getFilteredTasks returns all the tasks for a column but in reverse accounting 
+// for the current scroll value (therefore tasks that we scrolled beyond aren't even 
+// accounted for, or rendered) as well as filtered if a filter is in effect. 
+// They are filtered because in the board we should show the last added task first.
 func (self *TasksViewComponent) getFilteredTasks(columnName string) []*domain.Task {
 	ret := []*domain.Task{}
 
@@ -300,6 +325,36 @@ func (self *TasksViewComponent) drawTasks() []*widgets.Paragraph {
 	if self.TaskInFocus == nil {
 		self.SetDefaultFocusedWidget()
 	}
+	
+	// Set the task in focus to be the first one for its column if the flag is set
+	// from the last render.
+	if self.goToFirstTaskInColumn.IsSome() {
+		// No need to check for an empty board because logically we shouldn't be calling this
+		// in that case.
+		
+
+		// Set the task in focus to be the first task you encounter (doesn't necessarily mean the first column.)
+		found := false
+		for _, columnName := range self.board.Columns {
+			if columnName != self.goToFirstTaskInColumn.Unwrap() {
+				continue
+			}
+			
+			if found {
+				break
+			}
+			
+			tasks := self.getFilteredTasks(columnName)
+			
+			for _, task := range tasks {
+				self.TaskInFocus = task
+				found = true
+				break
+			}
+		}
+	}
+	self.goToFirstTaskInColumn = opt.None[string]()
+	
 	
 	for columnIndex, columnName := range self.board.Columns {
 		differentWidgetsLengths := []int{}
