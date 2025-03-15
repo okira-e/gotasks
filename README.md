@@ -21,8 +21,8 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 - `GOTASKS_DEBUG`: When set to true, it allows for logging debug messages that don't mean errors on `/path/for/config/gotasks/app.log`
 
 ## Movement
-- `j | <Down>`: Moves down one task
-- `k | <Up>`: Moves up one task
+- `j | <Down> | <C-n>`: Moves down one task
+- `k | <Up> | <C-p>`: Moves up one task
 - `h | <Left>`: Moves to the previous column
 - `l | <Right>`: Moves to the next column
 - `n`: Scrolls the view one task down

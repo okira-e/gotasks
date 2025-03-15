@@ -60,8 +60,8 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 	// to store tasks for each column. A more sophesticated DS like a Linked List would benefit vertical 
 	// movement here for example.
 	switch key {
-	case "j", "<Down>", "k", "<Up>":
-		if key == "k" || key == "<Up>" {
+	case "j", "<Down>", "<C-n>", "k", "<Up>", "<C-p>":
+		if key == "k" || key == "<Up>" || key == "<C-p>"{
 			for i := range tasks {
 				if tasks[i].Id == self.TaskInFocus.Id {
 					// Scroll up one task if you're on a the first task in the view but not in the list.
@@ -76,7 +76,7 @@ func (self *TasksViewComponent) HandleKeymap(key string) bool {
 					break
 				}
 			}
-		} else if key == "j" || key == "<Down>" {
+		} else if key == "j" || key == "<Down>" || key == "<C-n>" {
 			for i := range tasks {
 				if tasks[i].Id == self.TaskInFocus.Id {
 					if i + 1 <= len(tasks) - 1 { // We're not the last task in the list.
