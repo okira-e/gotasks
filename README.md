@@ -20,7 +20,9 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 - `GOTASKS_THEME`: Could be "dark" or "light"
 - `GOTASKS_DEBUG`: When set to true, it allows for logging debug messages that don't mean errors on `/path/for/config/gotasks/app.log`
 
-## Movement
+## KeyMap
+
+### Movement
 - `j | <Down> | <C-n>`: Moves down one task
 - `k | <Up> | <C-p>`: Moves up one task
 - `h | <Left>`: Moves to the previous column
@@ -30,8 +32,9 @@ Running `gotasks config`, will open up the config for all projects. Adding colum
 - `g`: Selects the top most task in the current column
 - `G`: Selects the bottom most task in the current column
 
-## Actions
+### Actions
 - `c`: Opens the popup for creating a new task. New tasks will appear on-top and in the left-most column
+- `Ctrl + c`: Closes the popup for creating a new task.
 - `e`: On any task, opens the popup for editing/viewing the task
 - `d`: Deletes a task with a confirmation toggle
 - `]`: Move task to the next column

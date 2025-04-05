@@ -54,7 +54,7 @@ func (self *CreateTaskPopup) GetAllDrawableWidgets() []termui.Drawable {
 // HandleKeyboardEvent handles every event for this widget. It returns a flag
 // indicating if the next render should clear the view.
 func (self *CreateTaskPopup) HandleKeyboardEvent(event termui.Event) bool {
-	if event.ID ==  "<Escape>" {
+	if event.ID ==  "<C-c>" {
 		self.Hide()
 		return true
 		
