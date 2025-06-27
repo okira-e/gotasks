@@ -30,7 +30,13 @@ func (app *App) handleKeymap(event termui.Event) bool {
 	shouldClear := false
 
 	if app.createTaskPopup.Visible {
+		wasVisible := app.createTaskPopup.Visible
+		wasEditing := app.createTaskPopup.EditingTask != nil
 		shouldClear = app.createTaskPopup.HandleKeyboardEvent(event)
+		// If popup just closed and it was a new task (not edit), focus latest
+		if wasVisible && !app.createTaskPopup.Visible && !wasEditing {
+			app.tasksView.FocusLatestTaskInFirstColumn()
+		}
 		
 	} else if app.confirmationPopup.Visible {
 		shouldClear = app.confirmationPopup.HandleInput(event)

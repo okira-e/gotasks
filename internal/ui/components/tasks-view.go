@@ -451,3 +451,16 @@ func (self *TasksViewComponent) Draw() {
 		self.GetAllDrawableWidgets()...
 	)
 }
+
+// FocusLatestTaskInFirstColumn sets the focus to the latest task in the leftmost column.
+func (self *TasksViewComponent) FocusLatestTaskInFirstColumn() {
+	if len(self.board.Columns) == 0 {
+		return
+	}
+	columnName := self.board.Columns[0]
+	tasks := self.board.Tasks[columnName]
+	if len(tasks) == 0 {
+		return
+	}
+	self.TaskInFocus = tasks[len(tasks)-1]
+}
